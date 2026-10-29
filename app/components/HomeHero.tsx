@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
+import { Button } from "~/components/ui/button";
 import type { HomeHeroData } from "~/lib/home-hero";
+import { cn } from "~/lib/utils";
 
 export function HomeHero({ hero }: { hero: HomeHeroData }) {
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
-  const image = hero.image && hero.image.url !== failedImageUrl ? hero.image : null;
+  const image =
+    hero.image && hero.image.url !== failedImageUrl ? hero.image : null;
 
   return (
-    <section className="max-w-page px-margin mx-auto w-full" aria-labelledby="hero-heading">
-      <div className="bleed-full bg-surface-secondary relative overflow-hidden">
+    <section
+      className="mx-auto w-full max-w-7xl px-4"
+      aria-labelledby="hero-heading"
+    >
+      <div className="bg-muted relative overflow-hidden rounded-xl">
         {image ? (
           <>
             <img
@@ -20,30 +26,44 @@ export function HomeHero({ hero }: { hero: HomeHeroData }) {
               fetchPriority="high"
               // An SSR image can fail before hydration attaches onError, so also check on mount.
               ref={(img) => {
-                if (img?.complete && img.naturalWidth === 0) setFailedImageUrl(image.url);
+                if (img?.complete && img.naturalWidth === 0)
+                  setFailedImageUrl(image.url);
               }}
               onError={() => setFailedImageUrl(image.url)}
             />
-            <div className="overlay-dark pointer-events-none absolute inset-0" aria-hidden="true" />
+            <div
+              className="bg-foreground/60 pointer-events-none absolute inset-0"
+              aria-hidden="true"
+            />
           </>
         ) : null}
         <div
-          className={`max-w-page px-margin relative z-10 mx-auto flex flex-col items-start justify-end ${image ? "text-interactive-text min-h-hero p-8 pb-12" : "text-on-surface py-16 md:py-20"}`}
+          className={cn(
+            "relative z-10 flex flex-col items-start justify-end px-4",
+            image
+              ? "text-primary-foreground min-h-[60dvh] p-8 pb-12"
+              : "py-16 md:py-20",
+          )}
         >
-          <h1 id="hero-heading" className="type-display max-w-2xl wrap-anywhere">
+          <h1
+            id="hero-heading"
+            className="font-heading max-w-2xl text-4xl font-semibold tracking-tight wrap-anywhere md:text-5xl"
+          >
             {hero.heading}
           </h1>
           {hero.description ? (
-            <p className="type-body-lg mt-3 max-w-prose wrap-anywhere whitespace-pre-line opacity-90">
+            <p className="mt-3 max-w-prose text-lg wrap-anywhere whitespace-pre-line opacity-90">
               {hero.description}
             </p>
           ) : null}
-          <Link
-            to={hero.to}
-            className="rounded-button button-primary focus-visible:outline-accent mt-6 inline-flex h-11 shrink-0 items-center justify-center gap-2 px-5 text-sm font-medium no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97]"
+          {/* Secondary reads against the dark image overlay; primary is near-black. */}
+          <Button
+            asChild
+            variant={image ? "secondary" : "default"}
+            className="mt-6 h-11 px-5"
           >
-            Shop now
-          </Link>
+            <Link to={hero.to}>Shop now</Link>
+          </Button>
         </div>
       </div>
     </section>

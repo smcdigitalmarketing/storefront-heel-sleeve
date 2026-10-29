@@ -1,5 +1,6 @@
 import { AnalyticsEvent, getSortByValue } from "@shopify/hydrogen";
 import { CollectionProvider } from "@shopify/hydrogen/react";
+import { PackageSearchIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate, useNavigation, useSearchParams } from "react-router";
 
@@ -13,9 +14,27 @@ import {
   useLoadMore,
 } from "~/components/CollectionBrowse";
 import { ProductCard } from "~/components/ProductCard";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
 import { loadCollectionPage } from "~/lib/collection";
 import { storefrontClientContext } from "~/lib/storefront";
 import { formatPageTitle, getShopNameFromRootMatch } from "~/lib/storefront-shop";
+import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/collection";
 
@@ -77,28 +96,26 @@ function BreadcrumbJsonLd({ collection, origin }: { collection: CollectionData; 
   return <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>;
 }
 
-function Breadcrumb({ collection }: { collection: CollectionData }) {
+function CollectionBreadcrumb({ collection }: { collection: CollectionData }) {
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="text-on-surface-secondary flex items-center gap-1.5 text-sm">
-        <li>
-          <Link
-            to="/"
-            className="hover:text-on-surface rounded-sm py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current motion-safe:transition-colors"
-          >
-            Home
-          </Link>
-        </li>
-        <li aria-hidden="true" className="text-on-surface-secondary">
-          /
-        </li>
-        <li>
-          <span aria-current="page" className="text-on-surface font-medium">
-            {collection.title}
-          </span>
-        </li>
-      </ol>
-    </nav>
+    <Breadcrumb aria-label="Breadcrumb" className="mb-6">
+      <BreadcrumbList className="gap-1.5 sm:gap-1.5">
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link
+              to="/"
+              className="focus-visible:ring-ring/50 rounded-sm py-2 outline-none focus-visible:ring-3"
+            >
+              Home
+            </Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator>/</BreadcrumbSeparator>
+        <BreadcrumbItem>
+          <BreadcrumbPage className="font-medium">{collection.title}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }
 
@@ -107,15 +124,17 @@ function CollectionHeader({ collection }: { collection: CollectionData }) {
     <div className="mb-8">
       <div className="grid gap-6 md:grid-cols-[1fr_16rem] md:items-start">
         <div>
-          <h1 className="type-display text-on-surface mb-2">{collection.title}</h1>
+          <h1 className="font-heading mb-2 text-4xl font-semibold tracking-tight md:text-5xl">
+            {collection.title}
+          </h1>
           {collection.description ? (
-            <div className="richtext text-on-surface-secondary type-body-sm max-w-2xl">
+            <div className="text-muted-foreground max-w-2xl text-sm [&_a]:underline [&_p]:mb-4">
               <p>{collection.description}</p>
             </div>
           ) : null}
         </div>
         {collection.image ? (
-          <div className="bg-surface-secondary aspect-landscape rounded-card overflow-hidden">
+          <div className="bg-muted aspect-video overflow-hidden rounded-lg">
             <img
               src={collection.image.url}
               alt={collection.image.altText ?? collection.title}
@@ -155,19 +174,26 @@ function ProductGrid({ products }: { products: readonly ProductNode[] }) {
 
 function EmptyState({ collectionPath }: { collectionPath: string }) {
   return (
-    <div className="border-border bg-surface-secondary rounded-card border p-8 text-center">
-      <h2 className="type-heading-md text-on-surface">No products found</h2>
-      <p className="text-on-surface-secondary mt-2 text-sm">
-        Try removing filters to see more products in this collection.
-      </p>
-      <Link
-        to={collectionPath}
-        preventScrollReset
-        className="rounded-button button-primary focus-visible:outline-accent mt-6 inline-flex h-11 items-center justify-center px-4 text-sm font-medium no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97]"
-      >
-        Clear all filters
-      </Link>
-    </div>
+    <Empty className="bg-muted border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <PackageSearchIcon aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>
+          <h2>No products found</h2>
+        </EmptyTitle>
+        <EmptyDescription>
+          Try removing filters to see more products in this collection.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button asChild className="h-11 px-4">
+          <Link to={collectionPath} preventScrollReset>
+            Clear all filters
+          </Link>
+        </Button>
+      </EmptyContent>
+    </Empty>
   );
 }
 
@@ -193,6 +219,12 @@ function CollectionResults({ loaderData }: { loaderData: Route.ComponentProps["l
         countText={countText}
         sortOptions={COLLECTION_SORT_OPTIONS}
         defaultSortValue={defaultSortValue}
+        filterDrawer={
+          <FilterDrawer
+            availableFilters={loaderData.availableFilters}
+            currencyCode={loaderData.currencyCode}
+          />
+        }
       />
       <ActiveFilterChips
         basePath={collectionPath}
@@ -202,7 +234,10 @@ function CollectionResults({ loaderData }: { loaderData: Route.ComponentProps["l
       <h2 className="sr-only">Products</h2>
       <div
         aria-busy={isUpdating}
-        className={`motion-safe:transition-opacity motion-safe:duration-150 ${isUpdating ? "opacity-60" : "opacity-100"}`}
+        className={cn(
+          "motion-safe:transition-opacity motion-safe:duration-150",
+          isUpdating ? "opacity-60" : "opacity-100",
+        )}
       >
         {nodes.length > 0 ? (
           <ProductGrid products={nodes} />
@@ -216,10 +251,6 @@ function CollectionResults({ loaderData }: { loaderData: Route.ComponentProps["l
         countLabel={`Showing ${nodes.length} products`}
         isLoading={isLoading}
         onLoad={loadMore}
-      />
-      <FilterDrawer
-        availableFilters={loaderData.availableFilters}
-        currencyCode={loaderData.currencyCode}
       />
     </>
   );
@@ -247,14 +278,14 @@ export default function CollectionRoute({ loaderData }: Route.ComponentProps) {
     >
       <CollectionViewedTracker collection={loaderData.collection} />
       <main className="flex-1" id="main-content" tabIndex={-1}>
-        <div className="max-w-page px-margin mx-auto w-full py-8 md:py-12">
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 md:py-12">
           <BreadcrumbJsonLd collection={loaderData.collection} origin={loaderData.origin} />
-          <Breadcrumb collection={loaderData.collection} />
+          <CollectionBreadcrumb collection={loaderData.collection} />
           <CollectionHeader collection={loaderData.collection} />
           <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-10">
-            <aside className="hidden lg:block" aria-label="Filters">
+            <aside className="hidden lg:block noscript:block" aria-label="Filters">
               <div className="sticky top-8">
-                <h2 className="type-heading-sm text-on-surface mb-2">Filters</h2>
+                <h2 className="font-heading mb-2 text-lg font-semibold tracking-tight">Filters</h2>
                 <FacetForm
                   availableFilters={loaderData.availableFilters}
                   currencyCode={loaderData.currencyCode}

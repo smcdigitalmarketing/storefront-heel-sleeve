@@ -1,6 +1,22 @@
+import { LayoutGridIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { CollectionCard } from "~/components/CollectionCard";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
 import { loadCollectionsPage } from "~/lib/collections";
 import { storefrontClientContext } from "~/lib/storefront";
 import { formatPageTitle, getShopNameFromRootMatch } from "~/lib/storefront-shop";
@@ -48,38 +64,43 @@ function BreadcrumbJsonLd({ origin }: { origin: string }) {
   return <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>;
 }
 
-function Breadcrumb() {
+function CollectionsBreadcrumb() {
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="text-on-surface-secondary flex items-center gap-1.5 text-sm">
-        <li>
-          <Link
-            to="/"
-            className="hover:text-on-surface rounded-sm py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current motion-safe:transition-colors"
-          >
-            Home
-          </Link>
-        </li>
-        <li aria-hidden="true" className="text-on-surface-secondary">
-          /
-        </li>
-        <li>
-          <span aria-current="page" className="text-on-surface font-medium">
-            Collections
-          </span>
-        </li>
-      </ol>
-    </nav>
+    <Breadcrumb aria-label="Breadcrumb" className="mb-6">
+      <BreadcrumbList className="gap-1.5 sm:gap-1.5">
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link
+              to="/"
+              className="focus-visible:ring-ring/50 rounded-sm py-2 outline-none focus-visible:ring-3"
+            >
+              Home
+            </Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator>/</BreadcrumbSeparator>
+        <BreadcrumbItem>
+          <BreadcrumbPage className="font-medium">Collections</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }
 
 function CollectionsGrid({ collections }: { collections: readonly CollectionNode[] }) {
   if (collections.length === 0) {
     return (
-      <div className="border-border bg-surface-secondary rounded-card border p-8 text-center">
-        <h2 className="type-heading-md text-on-surface">No collections found</h2>
-        <p className="text-on-surface-secondary mt-2 text-sm">No collections available.</p>
-      </div>
+      <Empty className="bg-muted border">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <LayoutGridIcon aria-hidden="true" />
+          </EmptyMedia>
+          <EmptyTitle>
+            <h2>No collections found</h2>
+          </EmptyTitle>
+          <EmptyDescription>No collections available.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 
@@ -102,11 +123,13 @@ function CollectionsGrid({ collections }: { collections: readonly CollectionNode
 export default function CollectionsRoute({ loaderData }: Route.ComponentProps) {
   return (
     <main className="flex-1" id="main-content" tabIndex={-1}>
-      <div className="max-w-page px-margin mx-auto w-full py-8 md:py-12">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 md:py-12">
         <BreadcrumbJsonLd origin={loaderData.origin} />
-        <Breadcrumb />
+        <CollectionsBreadcrumb />
         <div className="mb-8">
-          <h1 className="type-display text-on-surface">Collections</h1>
+          <h1 className="font-heading text-4xl font-semibold tracking-tight md:text-5xl">
+            Collections
+          </h1>
         </div>
         <CollectionsGrid collections={loaderData.collections.nodes} />
       </div>

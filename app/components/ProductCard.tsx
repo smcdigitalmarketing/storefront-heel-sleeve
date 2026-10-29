@@ -1,6 +1,7 @@
 import { gql, type StorefrontApi } from "@shopify/hydrogen";
 import { Link } from "react-router";
 
+import { Badge } from "~/components/ui/badge";
 import { compareMoney, formatPrice } from "~/lib/money";
 
 export const PRODUCT_CARD_FRAGMENT = gql(`
@@ -56,15 +57,15 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const compareAt = product.compareAtPriceRange.minVariantPrice;
   const onSale = compareMoney(compareAt, price) > 0;
   const badge = !product.availableForSale ? "Sold out" : onSale ? "Sale" : null;
-  const badgeClass = !product.availableForSale ? "badge-soldout" : "badge-sale";
+  const badgeVariant = !product.availableForSale ? "secondary" : "destructive";
 
   return (
     <article
-      className="group card flex flex-col gap-2"
+      className="group relative flex flex-col gap-2"
       aria-label={product.title}
       data-testid="product-card"
     >
-      <div className="rounded-card bg-surface-secondary relative block aspect-square overflow-hidden">
+      <div className="bg-muted relative block aspect-square overflow-hidden rounded-lg">
         {primaryImage ? (
           <div className="h-full w-full motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.04]">
             <img
@@ -87,33 +88,35 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
         ) : null}
         {badge ? (
-          <span
-            className={`${badgeClass} absolute start-2 top-2 inline-flex items-center rounded-full font-medium`}
-          >
+          <Badge variant={badgeVariant} className="absolute start-2 top-2">
             {badge}
-          </span>
+          </Badge>
         ) : null}
       </div>
       <div className="flex flex-col gap-0.5 text-left">
-        <h3 className="type-body-sm text-on-surface line-clamp-2 font-medium">
-          <Link to={`/products/${product.handle}`} className="card-link text-on-surface">
+        <h3 className="line-clamp-2 text-sm font-medium">
+          {/* The ::after stretches the link over the whole card. */}
+          <Link
+            to={`/products/${product.handle}`}
+            className="focus-visible:ring-ring/50 rounded-md outline-none after:absolute after:inset-0 focus-visible:ring-3"
+          >
             {product.title}
           </Link>
         </h3>
         <div className="inline-flex flex-wrap items-baseline gap-2 text-sm">
           {onSale ? (
             <>
-              <span className="text-sale font-medium">
+              <span className="text-destructive font-medium">
                 <span className="sr-only">Sale price: </span>
                 {formatPrice(price)}
               </span>
-              <s className="text-compare text-sm">
+              <s className="text-muted-foreground text-sm line-through">
                 <span className="sr-only">Regular price: </span>
                 {formatPrice(compareAt)}
               </s>
             </>
           ) : (
-            <span className="text-on-surface font-medium">
+            <span className="font-medium">
               <span className="sr-only">Price: </span>
               {formatPrice(price)}
             </span>

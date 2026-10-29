@@ -7,15 +7,40 @@ import {
   type SelectedOption,
 } from "@shopify/hydrogen";
 import { ShopPayButton } from "@shopify/hydrogen/react";
+import { MinusIcon, PlusIcon, SlashIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { ProductCard, PRODUCT_CARD_FRAGMENT } from "~/components/ProductCard";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { ButtonGroup } from "~/components/ui/button-group";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "~/components/ui/carousel";
+import { FieldLegend, FieldSet } from "~/components/ui/field";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { openCartDrawer } from "~/lib/cart-drawer";
 import { formatPrice, salePercent } from "~/lib/money";
 import { ProductProvider, useProductForm } from "~/lib/product";
 import { storefrontClientContext } from "~/lib/storefront";
-import { formatPageTitle, getShopNameFromRootMatch } from "~/lib/storefront-shop";
+import { cn } from "~/lib/utils";
+import {
+  formatPageTitle,
+  getShopNameFromRootMatch,
+} from "~/lib/storefront-shop";
 
 import type { Route } from "./+types/product";
 
@@ -24,7 +49,6 @@ const PRODUCT_VARIANT_FRAGMENT = gql(`
     id
     title
     availableForSale
-    quantityAvailable
     selectedOptions {
       name
       value
@@ -167,8 +191,11 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 }
 
 type ProductData = Route.ComponentProps["loaderData"]["product"];
-type ProductVariant = NonNullable<ProductData["selectedOrFirstAvailableVariant"]>;
-type RelatedProduct = Route.ComponentProps["loaderData"]["relatedProducts"][number];
+type ProductVariant = NonNullable<
+  ProductData["selectedOrFirstAvailableVariant"]
+>;
+type RelatedProduct =
+  Route.ComponentProps["loaderData"]["relatedProducts"][number];
 
 type ProductImage = {
   id?: string | null;
@@ -217,7 +244,9 @@ function buildSwatchLookup(product: ProductData) {
 }
 
 function hasSwatchData(product: ProductData, optionName: string) {
-  const option = product.options.find((candidate) => candidate.name === optionName);
+  const option = product.options.find(
+    (candidate) => candidate.name === optionName,
+  );
   return Boolean(
     option?.optionValues.some(
       (value) => value.swatch?.color || value.swatch?.image?.previewImage?.url,
@@ -247,7 +276,10 @@ function ProductViewedTracker({ product }: { product: ProductData }) {
   return null;
 }
 
-function useGalleryImages(product: ProductData, selectedVariant: ProductVariant | null) {
+function useGalleryImages(
+  product: ProductData,
+  selectedVariant: ProductVariant | null,
+) {
   return useMemo(() => {
     const images: ProductImage[] = [];
     const seen = new Set<string>();
@@ -257,15 +289,19 @@ function useGalleryImages(product: ProductData, selectedVariant: ProductVariant 
       images.push(image);
     };
 
-    addImage(selectedVariant?.image ?? product.featuredImage ?? product.images.nodes[0]);
+    addImage(
+      selectedVariant?.image ??
+        product.featuredImage ??
+        product.images.nodes[0],
+    );
     for (const image of product.images.nodes) addImage(image);
     return images;
   }, [product, selectedVariant]);
 }
 
 function galleryDotClass(active: boolean) {
-  if (active) return "bg-on-surface size-2 rounded-full";
-  return "bg-on-surface/30 size-2 rounded-full";
+  if (active) return "bg-foreground size-2 rounded-full";
+  return "bg-foreground/30 size-2 rounded-full";
 }
 
 function ProductGallery({
@@ -277,39 +313,46 @@ function ProductGallery({
 }) {
   const images = useGalleryImages(product, selectedVariant);
   const primaryImageUrl = images[0]?.url;
+  const [api, setApi] = useState<CarouselApi>();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => setActiveIndex(0), [primaryImageUrl]);
+  useEffect(() => {
+    if (!api) return;
+    const onSelect = () => setActiveIndex(api.selectedScrollSnap());
+    onSelect();
+    api.on("select", onSelect);
+    api.on("reInit", onSelect);
+    return () => {
+      api.off("select", onSelect);
+      api.off("reInit", onSelect);
+    };
+  }, [api]);
+
+  // The selected variant's image leads the gallery, so jump back to it.
+  useEffect(() => {
+    setActiveIndex(0);
+    api?.scrollTo(0, true);
+  }, [api, primaryImageUrl]);
 
   return (
-    <div data-testid="product-gallery">
-      <div
-        role="region"
-        aria-roledescription="carousel"
+    <div data-testid="product-gallery" className="min-w-0">
+      <Carousel
+        setApi={setApi}
+        // From md up the slides sit in a two-column grid instead of a slider.
+        opts={{ breakpoints: { "(min-width: 768px)": { active: false } } }}
         aria-label={product.title}
-        className="relative grid"
       >
-        <div
+        <CarouselContent
           data-product-gallery-track
-          className="flex snap-x snap-mandatory overflow-x-auto md:grid md:grid-cols-2 md:overflow-visible"
-          style={{ scrollbarWidth: "none" }}
-          tabIndex={0}
-          onScroll={(event) => {
-            const track = event.currentTarget;
-            if (track.clientWidth > 0) {
-              setActiveIndex(Math.round(track.scrollLeft / track.clientWidth));
-            }
-          }}
+          className="md:ml-0 md:grid md:grid-cols-2"
         >
           {images.map((image, index) => (
-            <div
+            <CarouselItem
               key={image.url}
-              role="group"
-              aria-roledescription="slide"
               aria-label={`Slide ${index + 1} of ${images.length}`}
-              className="w-full shrink-0 snap-center contain-paint md:w-auto md:shrink"
+              className="[contain:paint] md:pl-0"
             >
-              <div className="bg-surface-secondary aspect-square overflow-hidden">
+              <div className="bg-muted aspect-square overflow-hidden">
                 <img
                   src={image.url}
                   alt={image.altText ?? product.title}
@@ -318,27 +361,42 @@ function ProductGallery({
                   className="h-full w-full object-cover"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
-                  data-testid={index === 0 ? "product-gallery-image" : undefined}
+                  data-testid={
+                    index === 0 ? "product-gallery-image" : undefined
+                  }
                 />
               </div>
-            </div>
+            </CarouselItem>
           ))}
-        </div>
+        </CarouselContent>
         {images.length > 1 ? (
-          <div className="absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-3 md:hidden">
-            <div
-              data-slideshow-dots
-              role="group"
-              aria-label="Slideshow pagination"
-              className="flex items-center justify-center gap-2"
-            >
-              {images.map((image, index) => (
-                <span key={image.url} className={galleryDotClass(index === activeIndex)} />
-              ))}
+          <>
+            <CarouselPrevious
+              size="icon-lg"
+              className="left-2 size-11 md:hidden"
+            />
+            <CarouselNext
+              size="icon-lg"
+              className="right-2 size-11 md:hidden"
+            />
+            <div className="absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-3 md:hidden">
+              <div
+                data-slideshow-dots
+                role="group"
+                aria-label="Slideshow pagination"
+                className="flex items-center justify-center gap-2"
+              >
+                {images.map((image, index) => (
+                  <span
+                    key={image.url}
+                    className={galleryDotClass(index === activeIndex)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         ) : null}
-      </div>
+      </Carousel>
     </div>
   );
 }
@@ -356,23 +414,23 @@ function PriceBlock({
 
   return (
     <div className="mt-4" data-product-price>
-      <div className="inline-flex flex-wrap items-baseline gap-2">
+      <div className="inline-flex flex-wrap items-center gap-2">
         {compareAt && percent ? (
           <>
-            <span className="text-sale font-medium">
+            <span className="text-destructive font-medium">
               <span className="sr-only">Sale price: </span>
               {formatPrice(price)}
             </span>
-            <s className="text-compare text-sm">
+            <s className="text-muted-foreground text-sm line-through">
               <span className="sr-only">Regular price: </span>
               {formatPrice(compareAt)}
             </s>
-            <span className="text-sale text-sm font-medium" aria-label={`Save ${percent}%`}>
-              (-{percent}%)
-            </span>
+            <Badge variant="destructive" aria-label={`Save ${percent}%`}>
+              -{percent}%
+            </Badge>
           </>
         ) : (
-          <span className="text-on-surface font-medium">
+          <span className="font-medium">
             <span className="sr-only">Price: </span>
             {formatPrice(price)}
           </span>
@@ -382,34 +440,18 @@ function PriceBlock({
   );
 }
 
-function InventoryHint({ selectedVariant }: { selectedVariant: ProductVariant | null }) {
-  if (!selectedVariant) return null;
-  if (!selectedVariant.availableForSale) {
-    return (
-      <div className="mt-3">
-        <div className="flex items-center gap-2 text-sm" data-product-inventory>
-          <span
-            className="bg-critical inline-block h-2 w-2 shrink-0 rounded-full"
-            aria-hidden="true"
-          />
-          <span className="text-critical font-medium">Out of stock</span>
-        </div>
-      </div>
-    );
-  }
-
-  const quantity = selectedVariant.quantityAvailable;
-  if (quantity == null || quantity > 5) return null;
+function InventoryHint({
+  selectedVariant,
+}: {
+  selectedVariant: ProductVariant | null;
+}) {
+  // Only sold-out is shown. Low-stock counts ("Only 3 left") are left out on
+  // purpose: the stores carry no stock warnings (see AGENTS.md, "Content rules").
+  if (!selectedVariant || selectedVariant.availableForSale) return null;
 
   return (
-    <div className="mt-3">
-      <div className="flex items-center gap-2 text-sm" data-product-inventory>
-        <span
-          className="bg-warning inline-block h-2 w-2 shrink-0 rounded-full"
-          aria-hidden="true"
-        />
-        <span className="text-warning font-medium">Only {quantity} left in stock</span>
-      </div>
+    <div className="mt-3" data-product-inventory>
+      <Badge variant="destructive">Out of stock</Badge>
     </div>
   );
 }
@@ -432,22 +474,31 @@ function VariantOptions({ product }: { product: ProductData }) {
   const { options, register } = useProductForm();
   const swatches = useMemo(() => buildSwatchLookup(product), [product]);
   const location = useLocation();
-  const baseParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const baseParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
 
   return (
-    <div className="swatch-buttons space-y-4">
+    <div className="flex flex-col gap-4">
       {options.map((option) => {
-        const selectedValue = option.values.find((value) => value.selected)?.name;
+        const selectedValue = option.values.find(
+          (value) => value.selected,
+        )?.name;
         const renderSwatches = hasSwatchData(product, option.name);
         const isColorOption = option.name.toLowerCase().includes("color");
 
         return (
-          <fieldset key={option.name} className="space-y-2">
-            <legend className="text-on-surface text-sm font-medium">
+          <FieldSet key={option.name} className="gap-2">
+            <FieldLegend variant="label" className="mb-2">
               {option.name}
               {selectedValue ? `: ${selectedValue}` : ""}
-            </legend>
-            <div className="flex flex-wrap gap-2" role="group" aria-label={option.name}>
+            </FieldLegend>
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label={option.name}
+            >
               {option.values.map((variantOption) => {
                 const valueName = variantOption.name;
                 const registered = register("optionValue", {
@@ -463,34 +514,49 @@ function VariantOptions({ product }: { product: ProductData }) {
                 );
                 const soldOut = !variantOption.available;
                 const testId = isColorOption ? "color-swatch" : undefined;
-                const swatch = renderSwatches ? swatches.get(`${option.name}:${valueName}`) : null;
-                const swatchStyle = swatch?.imageUrl
-                  ? { backgroundImage: `url("${swatch.imageUrl}")` }
-                  : { backgroundColor: swatch?.color ?? undefined };
+                const swatch = renderSwatches
+                  ? swatches.get(`${option.name}:${valueName}`)
+                  : null;
+                const swatchColor = swatch?.imageUrl
+                  ? undefined
+                  : (swatch?.color ?? undefined);
 
+                // Swatches are round ghost buttons; pills fill in when selected.
+                const variant = renderSwatches
+                  ? "ghost"
+                  : variantOption.selected
+                    ? "default"
+                    : "outline";
+                const size = renderSwatches ? "icon" : "default";
                 const className = renderSwatches
-                  ? `min-h-touch-target min-w-touch-target relative inline-flex cursor-pointer items-center justify-center motion-safe:transition-transform motion-safe:active:scale-[0.93] ${soldOut ? "opacity-50" : ""}`
-                  : `option-pill focus-visible:outline-accent motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97] ${variantOption.selected ? "is-selected" : ""} ${soldOut ? "opacity-50" : ""}`;
+                  ? cn("size-11 rounded-full", soldOut && "opacity-50")
+                  : cn(
+                      "h-auto min-h-11 min-w-11 px-3 py-1.5",
+                      soldOut && "opacity-50",
+                    );
                 const content = renderSwatches ? (
                   <>
                     <span
-                      className={`swatch-md border-border relative inline-flex items-center justify-center overflow-hidden rounded-full border-2 ring-offset-2 ${variantOption.selected ? "border-interactive" : ""}`}
-                      style={swatchStyle}
+                      className={cn(
+                        "relative inline-flex size-8 items-center justify-center overflow-hidden rounded-full border",
+                        variantOption.selected &&
+                          "ring-primary ring-offset-background ring-2 ring-offset-2",
+                      )}
+                      style={{ backgroundColor: swatchColor }}
                     >
-                      {variantOption.selected ? (
-                        <span className="swatch-scrim absolute inset-0" />
+                      {swatch?.imageUrl ? (
+                        <img
+                          src={swatch.imageUrl}
+                          alt=""
+                          className="size-full object-cover"
+                        />
                       ) : null}
                       {soldOut ? (
-                        <svg
-                          className="absolute inset-0 h-full w-full"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
+                        <SlashIcon
+                          className="absolute inset-0 size-full"
+                          strokeWidth={1.5}
                           aria-hidden="true"
-                        >
-                          <line x1="4" y1="4" x2="20" y2="20" />
-                        </svg>
+                        />
                       ) : null}
                     </span>
                     <span className="sr-only">
@@ -504,9 +570,11 @@ function VariantOptions({ product }: { product: ProductData }) {
 
                 if (!isCrossProduct && !variantOption.exists) {
                   return (
-                    <button
+                    <Button
                       key={valueName}
                       type="button"
+                      variant={variant}
+                      size={size}
                       disabled
                       className={className}
                       aria-label={renderSwatches ? valueName : undefined}
@@ -514,7 +582,7 @@ function VariantOptions({ product }: { product: ProductData }) {
                       data-testid={testId}
                     >
                       {content}
-                    </button>
+                    </Button>
                   );
                 }
 
@@ -523,34 +591,40 @@ function VariantOptions({ product }: { product: ProductData }) {
                 // navigation, and a change of element type there would remount the
                 // focused control and drop focus to <body>.
                 return (
-                  <Link
+                  <Button
                     key={valueName}
-                    to={toRouterLocation(linkTarget)}
-                    replace={!isCrossProduct}
-                    preventScrollReset
+                    asChild
+                    variant={variant}
+                    size={size}
                     className={className}
-                    aria-label={renderSwatches ? valueName : undefined}
-                    aria-current={variantOption.selected ? "true" : undefined}
-                    data-testid={testId}
-                    onClick={
-                      isCrossProduct
-                        ? undefined
-                        : (event) => {
-                            if (!isPlainActivation(event)) return;
-                            registered.onClick();
-                            // onSelect has already navigated with the provider's replace
-                            // and revalidation settings. Letting Link navigate too would
-                            // refetch the loader that a resolved selection just skipped.
-                            event.preventDefault();
-                          }
-                    }
                   >
-                    {content}
-                  </Link>
+                    <Link
+                      to={toRouterLocation(linkTarget)}
+                      replace={!isCrossProduct}
+                      preventScrollReset
+                      aria-label={renderSwatches ? valueName : undefined}
+                      aria-current={variantOption.selected ? "true" : undefined}
+                      data-testid={testId}
+                      onClick={
+                        isCrossProduct
+                          ? undefined
+                          : (event) => {
+                              if (!isPlainActivation(event)) return;
+                              registered.onClick();
+                              // onSelect has already navigated with the provider's replace
+                              // and revalidation settings. Letting Link navigate too would
+                              // refetch the loader that a resolved selection just skipped.
+                              event.preventDefault();
+                            }
+                      }
+                    >
+                      {content}
+                    </Link>
+                  </Button>
                 );
               })}
             </div>
-          </fieldset>
+          </FieldSet>
         );
       })}
     </div>
@@ -568,46 +642,47 @@ function QuantitySelector({
   const clamp = (value: number) => Math.min(99, Math.max(1, value));
 
   return (
-    <div className="shrink-0">
-      <label className="text-on-surface mb-2 block text-sm font-medium" htmlFor="quantity">
-        Quantity
-      </label>
-      <div
-        className="quantity-selector-outlined rounded-input inline-flex items-center"
-        data-testid="quantity-stepper"
-      >
-        <button
+    <div className="flex shrink-0 flex-col gap-2">
+      <Label htmlFor="quantity">Quantity</Label>
+      <ButtonGroup data-testid="quantity-stepper">
+        <Button
           type="button"
-          className="text-on-surface-secondary hover:text-on-surface inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-[color,transform] motion-safe:active:scale-[0.90]"
+          variant="outline"
+          size="icon"
+          className="size-11"
           aria-label="Decrease quantity"
           onClick={() => setQuantity(clamp(quantity - 1))}
           disabled={quantity <= 1}
         >
-          <img src="/icons/icon-minus.svg" alt="" className="size-4" aria-hidden="true" />
-        </button>
-        <input
+          <MinusIcon aria-hidden="true" />
+        </Button>
+        <Input
           type="number"
           id="quantity"
           {...register("quantity", { value: quantity })}
           min={1}
           max={99}
           step={1}
-          className="number-reset text-on-surface h-11 w-12 rounded-none border-0 bg-transparent p-0 text-center text-sm"
+          className="h-11 w-12 [appearance:textfield] text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           aria-label="Quantity"
           onChange={(event) =>
-            setQuantity(clamp(Number.parseInt(event.currentTarget.value, 10) || 1))
+            setQuantity(
+              clamp(Number.parseInt(event.currentTarget.value, 10) || 1),
+            )
           }
         />
-        <button
+        <Button
           type="button"
-          className="text-on-surface-secondary hover:text-on-surface inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-[color,transform] motion-safe:active:scale-[0.90]"
+          variant="outline"
+          size="icon"
+          className="size-11"
           aria-label="Increase quantity"
           onClick={() => setQuantity(clamp(quantity + 1))}
           disabled={quantity >= 99}
         >
-          <img src="/icons/icon-plus.svg" alt="" className="size-4" aria-hidden="true" />
-        </button>
-      </div>
+          <PlusIcon aria-hidden="true" />
+        </Button>
+      </ButtonGroup>
     </div>
   );
 }
@@ -625,7 +700,11 @@ function AddToCart({
 }) {
   const { options, register, formProps, errors, pending } = useProductForm();
   const addable = canAddToCart(product, options);
-  const buttonText = addable ? "Add to cart" : selectedVariant ? "Sold out" : "Select options";
+  const buttonText = addable
+    ? "Add to cart"
+    : selectedVariant
+      ? "Sold out"
+      : "Select options";
 
   return (
     <>
@@ -634,14 +713,15 @@ function AddToCart({
           <QuantitySelector quantity={quantity} setQuantity={setQuantity} />
         </div>
         <input type="hidden" {...register("merchandiseId", {})} />
-        <button
+        <Button
           {...register("addToCart", {})}
-          className="rounded-button button-primary focus-visible:outline-accent inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97]"
+          size="lg"
+          className="h-11 w-full"
           disabled={!addable || pending}
           data-testid="add-to-cart"
         >
           {buttonText}
-        </button>
+        </Button>
       </form>
       {selectedVariant ? (
         <div className="mt-3">
@@ -653,20 +733,21 @@ function AddToCart({
           />
         </div>
       ) : null}
-      {[...errors.userErrors, ...errors.warnings, ...errors.networkErrors].length ? (
+      {[...errors.userErrors, ...errors.warnings, ...errors.networkErrors]
+        .length ? (
         <div className="mt-3 grid gap-1 text-sm" role="alert">
           {errors.userErrors.map((error) => (
-            <p key={error.message} className="text-critical">
+            <p key={error.message} className="text-destructive">
               {error.message}
             </p>
           ))}
           {errors.warnings.map((warning) => (
-            <p key={warning.message} className="text-warning">
+            <p key={warning.message} className="text-muted-foreground">
               {warning.message}
             </p>
           ))}
           {errors.networkErrors.map((error) => (
-            <p key={error.message} className="text-critical">
+            <p key={error.message} className="text-destructive">
               {error.message}
             </p>
           ))}
@@ -689,11 +770,13 @@ function ProductInfo({
     <div className="flex flex-col gap-6 md:sticky md:top-8 md:self-start">
       <div className="pt-4 md:pt-8">
         {product.vendor ? (
-          <p className="type-body-sm text-on-surface-secondary mb-4 tracking-wide uppercase">
+          <p className="text-muted-foreground mb-4 text-sm tracking-wide uppercase">
             {product.vendor}
           </p>
         ) : null}
-        <h1 className="type-display text-on-surface">{product.title}</h1>
+        <h1 className="font-heading text-4xl font-semibold tracking-tight md:text-5xl">
+          {product.title}
+        </h1>
         <PriceBlock product={product} selectedVariant={selectedVariant} />
         <InventoryHint selectedVariant={selectedVariant} />
       </div>
@@ -701,7 +784,7 @@ function ProductInfo({
       <span className="sr-only" aria-live="polite" id="inventory-status" />
 
       {product.description ? (
-        <div className="type-body-sm text-on-surface-secondary leading-relaxed">
+        <div className="text-muted-foreground text-sm leading-relaxed">
           {product.description}
         </div>
       ) : null}
@@ -718,24 +801,25 @@ function ProductInfo({
       </div>
 
       <h2 className="sr-only">Product details</h2>
-      <details className="group border-border border-t border-b" name="product-details" open>
-        <summary className="marker-hidden text-on-surface hover:text-on-surface-secondary flex cursor-pointer items-center justify-between px-1 py-4 text-sm font-medium">
-          <span className="text-sm font-medium">Description</span>
-          <span
-            className="ms-4 size-4 shrink-0 group-open:rotate-180 motion-safe:transition-transform motion-safe:duration-200"
-            aria-hidden="true"
-          >
-            <img src="/icons/icon-chevron-down.svg" alt="" className="size-4" />
-          </span>
-        </summary>
-        <div className="richtext text-on-surface-secondary px-1 pb-4 text-sm">
-          {product.descriptionHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
-          ) : (
-            <p>{product.description}</p>
-          )}
-        </div>
-      </details>
+      <Accordion
+        type="single"
+        collapsible
+        defaultValue="description"
+        className="border-y"
+      >
+        <AccordionItem value="description">
+          <AccordionTrigger className="px-1">Description</AccordionTrigger>
+          <AccordionContent className="text-muted-foreground px-1 leading-relaxed [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:ps-6 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:ps-6">
+            {product.descriptionHtml ? (
+              <div
+                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+              />
+            ) : (
+              <p>{product.description}</p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }
@@ -744,8 +828,8 @@ function ProductPageContent({ product }: { product: ProductData }) {
   const { selectedVariant } = useProductForm();
 
   return (
-    <section className="max-w-page px-margin mx-auto w-full pb-4">
-      <div className="product-grid mb-16 grid grid-cols-1 gap-6 md:gap-12">
+    <section className="mx-auto w-full max-w-7xl px-4 pb-4">
+      <div className="mb-16 grid grid-cols-1 gap-6 md:grid-cols-[2fr_1fr] md:gap-12">
         <ProductGallery product={product} selectedVariant={selectedVariant} />
         <ProductInfo product={product} selectedVariant={selectedVariant} />
       </div>
@@ -758,14 +842,14 @@ function RelatedProducts({ products }: { products: RelatedProduct[] }) {
 
   return (
     <section className="py-4" aria-labelledby="related-products-heading">
-      <div className="border-border border-t pt-12">
+      <div className="border-t pt-12">
         <h2
           id="related-products-heading"
-          className="type-heading-xl max-w-page px-margin mx-auto mb-8"
+          className="font-heading mx-auto mb-8 max-w-7xl px-4 text-3xl font-semibold tracking-tight"
         >
           More products
         </h2>
-        <div className="max-w-page px-margin mx-auto contain-paint">
+        <div className="mx-auto max-w-7xl px-4 [contain:paint]">
           <ul
             role="list"
             className="grid grid-cols-1 gap-x-1 gap-y-10 md:grid-cols-2 lg:grid-cols-4"
@@ -802,7 +886,9 @@ export default function ProductRoute({ loaderData }: Route.ComponentProps) {
         void navigate(url, {
           replace: true,
           preventScrollReset: true,
-          ...(result.status === "resolved" ? { defaultShouldRevalidate: false } : {}),
+          ...(result.status === "resolved"
+            ? { defaultShouldRevalidate: false }
+            : {}),
         });
       }}
     >

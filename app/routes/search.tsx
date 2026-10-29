@@ -4,6 +4,7 @@ import {
   getSortByValue,
 } from "@shopify/hydrogen";
 import { CollectionProvider } from "@shopify/hydrogen/react";
+import { SearchIcon, SearchXIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate, useNavigation, useSearchParams } from "react-router";
 
@@ -17,9 +18,28 @@ import {
   useLoadMore,
 } from "~/components/CollectionBrowse";
 import { ProductCard } from "~/components/ProductCard";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "~/components/ui/input-group";
+import { Label } from "~/components/ui/label";
 import { loadSearchPage, type SearchPageData } from "~/lib/search";
 import { storefrontClientContext } from "~/lib/storefront";
 import { formatPageTitle, getShopNameFromRootMatch } from "~/lib/storefront-shop";
+import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/search";
 
@@ -84,28 +104,26 @@ function BreadcrumbJsonLd({ origin }: { origin: string }) {
   return <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>;
 }
 
-function Breadcrumb() {
+function SearchBreadcrumb() {
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="text-on-surface-secondary flex items-center gap-1.5 text-sm">
-        <li>
-          <Link
-            to="/"
-            className="hover:text-on-surface rounded-sm py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current motion-safe:transition-colors"
-          >
-            Home
-          </Link>
-        </li>
-        <li aria-hidden="true" className="text-on-surface-secondary">
-          /
-        </li>
-        <li>
-          <span aria-current="page" className="text-on-surface font-medium">
-            Search
-          </span>
-        </li>
-      </ol>
-    </nav>
+    <Breadcrumb aria-label="Breadcrumb" className="mb-6">
+      <BreadcrumbList className="gap-1.5 sm:gap-1.5">
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link
+              to="/"
+              className="focus-visible:ring-ring/50 rounded-sm py-2 outline-none focus-visible:ring-3"
+            >
+              Home
+            </Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator>/</BreadcrumbSeparator>
+        <BreadcrumbItem>
+          <BreadcrumbPage className="font-medium">Search</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }
 
@@ -114,7 +132,9 @@ const registerSearchForm = createPredictiveSearchFormRegister();
 function SearchHeader({ term }: { term: string }) {
   return (
     <div className="mb-8">
-      <h1 className="type-display text-on-surface mb-6">Search</h1>
+      <h1 className="font-heading mb-6 text-4xl font-semibold tracking-tight md:text-5xl">
+        Search
+      </h1>
       <form
         action="/search"
         method="get"
@@ -122,34 +142,36 @@ function SearchHeader({ term }: { term: string }) {
         aria-label="Search"
         className="mb-8 max-w-lg"
       >
-        <label htmlFor="search-q" className="text-on-surface mb-1.5 block text-sm font-medium">
+        <Label htmlFor="search-q" className="mb-1.5">
           Search
-        </label>
-        <div className="relative">
-          <span
-            className="text-on-surface-secondary pointer-events-none absolute start-3 top-1/2 inline-flex size-5 -translate-y-1/2 items-center justify-center"
-            aria-hidden="true"
-          >
-            <img src="/icons/icon-search.svg" alt="" className="size-5" />
-          </span>
-          <input
+        </Label>
+        <InputGroup className="h-11">
+          <InputGroupAddon>
+            <SearchIcon className="size-5" aria-hidden="true" />
+          </InputGroupAddon>
+          <InputGroupInput
             key={term}
             {...registerSearchForm("query")}
             id="search-q"
             defaultValue={term}
             placeholder="Search"
-            className="peer h-11 w-full ps-10 pe-14"
           />
           {term ? (
-            <Link
-              to="/search"
-              aria-label="Clear search"
-              className="text-on-surface-secondary hover:text-on-surface focus-visible:outline-accent min-h-touch-target min-w-touch-target absolute end-1 top-1/2 inline-flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-colors"
-            >
-              <img src="/icons/icon-x.svg" alt="" className="size-4" aria-hidden="true" />
-            </Link>
+            <InputGroupAddon align="inline-end">
+              {/* The ::after widens the hit area to 44px without growing the field. */}
+              <Button
+                asChild
+                variant="ghost"
+                size="icon-sm"
+                className="relative after:absolute after:-inset-1.5"
+              >
+                <Link to="/search" aria-label="Clear search">
+                  <XIcon aria-hidden="true" />
+                </Link>
+              </Button>
+            </InputGroupAddon>
           ) : null}
-        </div>
+        </InputGroup>
       </form>
     </div>
   );
@@ -180,12 +202,15 @@ function ProductGrid({ products }: { products: readonly ProductNode[] }) {
 
 function NoResults({ term }: { term: string }) {
   return (
-    <div aria-live="polite">
-      <p className="type-body text-on-surface-secondary">No results for “{term}”</p>
-      <p className="text-on-surface-secondary mt-2 text-sm">
-        Check your spelling or try a more general term.
-      </p>
-    </div>
+    <Empty className="bg-muted border" aria-live="polite">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <SearchXIcon aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>No results for “{term}”</EmptyTitle>
+        <EmptyDescription>Check your spelling or try a more general term.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }
 
@@ -209,52 +234,55 @@ function SearchResults({ loaderData }: { loaderData: PerformedSearchData }) {
   if (nodes.length === 0) return <NoResults term={loaderData.searchTerm} />;
 
   return (
-    <>
-      <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-10">
-        <aside className="hidden lg:block" aria-label="Filters">
-          <div className="sticky top-8">
-            <h2 className="type-heading-sm text-on-surface mb-2">Filters</h2>
-            <FacetForm
+    <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-10">
+      <aside className="hidden lg:block noscript:block" aria-label="Filters">
+        <div className="sticky top-8">
+          <h2 className="font-heading mb-2 text-lg font-semibold tracking-tight">Filters</h2>
+          <FacetForm
+            availableFilters={loaderData.availableFilters}
+            currencyCode={loaderData.currencyCode}
+            extraHiddenInputs={searchTermHiddenInput(loaderData.searchTerm)}
+          />
+        </div>
+      </aside>
+      <div>
+        <Toolbar
+          countText={countText}
+          sortOptions={SEARCH_SORT_OPTIONS}
+          defaultSortValue={defaultSortValue}
+          extraHiddenInputs={hiddenQuery}
+          filterDrawer={
+            <FilterDrawer
               availableFilters={loaderData.availableFilters}
               currencyCode={loaderData.currencyCode}
               extraHiddenInputs={searchTermHiddenInput(loaderData.searchTerm)}
             />
-          </div>
-        </aside>
-        <div>
-          <Toolbar
-            countText={countText}
-            sortOptions={SEARCH_SORT_OPTIONS}
-            defaultSortValue={defaultSortValue}
-            extraHiddenInputs={hiddenQuery}
-          />
-          <ActiveFilterChips
-            basePath={searchPath}
-            clearAllTo={searchPath}
-            currencyCode={loaderData.currencyCode}
-          />
-          <h2 className="sr-only">Search results</h2>
-          <div
-            aria-busy={isUpdating}
-            className={`motion-safe:transition-opacity motion-safe:duration-150 ${isUpdating ? "opacity-60" : "opacity-100"}`}
-          >
-            <ProductGrid products={nodes} />
-          </div>
-          <LoadMore
-            pageInfo={pageInfo}
-            loadedCount={nodes.length}
-            countLabel={`Showing ${nodes.length} of ${loaderData.totalCount} results`}
-            isLoading={isLoading}
-            onLoad={loadMore}
-          />
+          }
+        />
+        <ActiveFilterChips
+          basePath={searchPath}
+          clearAllTo={searchPath}
+          currencyCode={loaderData.currencyCode}
+        />
+        <h2 className="sr-only">Search results</h2>
+        <div
+          aria-busy={isUpdating}
+          className={cn(
+            "motion-safe:transition-opacity motion-safe:duration-150",
+            isUpdating ? "opacity-60" : "opacity-100",
+          )}
+        >
+          <ProductGrid products={nodes} />
         </div>
+        <LoadMore
+          pageInfo={pageInfo}
+          loadedCount={nodes.length}
+          countLabel={`Showing ${nodes.length} of ${loaderData.totalCount} results`}
+          isLoading={isLoading}
+          onLoad={loadMore}
+        />
       </div>
-      <FilterDrawer
-        availableFilters={loaderData.availableFilters}
-        currencyCode={loaderData.currencyCode}
-        extraHiddenInputs={searchTermHiddenInput(loaderData.searchTerm)}
-      />
-    </>
+    </div>
   );
 }
 
@@ -288,9 +316,9 @@ export default function SearchRoute({ loaderData }: Route.ComponentProps) {
         />
       ) : null}
       <main className="flex-1" id="main-content" tabIndex={-1}>
-        <div className="max-w-page px-margin mx-auto w-full py-8 md:py-12">
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 md:py-12">
           <BreadcrumbJsonLd origin={loaderData.origin} />
-          <Breadcrumb />
+          <SearchBreadcrumb />
           <SearchHeader term={loaderData.searchTerm} />
           {loaderData.performed ? <SearchResults loaderData={loaderData} /> : null}
         </div>

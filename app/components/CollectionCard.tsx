@@ -77,11 +77,11 @@ export function CollectionCard({
   return (
     <Link
       to={`/collections/${collection.handle}`}
-      className="card group rounded-card focus-visible:outline-accent relative block overflow-hidden no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="group focus-visible:ring-ring/50 relative block overflow-hidden rounded-lg no-underline outline-none focus-visible:ring-3"
       aria-label={collection.title}
       data-testid="collection-card"
     >
-      <div className="bg-surface-secondary relative block aspect-square overflow-hidden">
+      <div className="bg-muted relative block aspect-square overflow-hidden">
         {image ? (
           <div className="h-full w-full motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.04]">
             <img
@@ -96,10 +96,11 @@ export function CollectionCard({
           </div>
         ) : null}
       </div>
-      <div className="overlay-dark pointer-events-none absolute inset-0" />
-      <div className="text-interactive-text absolute inset-x-0 bottom-0 z-10 p-4 text-left">
-        <h3 className="type-body-lg font-medium">{collection.title}</h3>
-        <p className="type-body-sm mt-0.5 opacity-80">
+      {/* Darkens the bottom of the image so the title stays readable. */}
+      <div className="from-foreground/80 via-foreground/40 pointer-events-none absolute inset-0 bg-linear-to-t to-transparent" />
+      <div className="text-background absolute inset-x-0 bottom-0 z-10 p-4 text-left">
+        <h3 className="text-lg font-medium">{collection.title}</h3>
+        <p className="mt-0.5 text-sm opacity-80">
           {productCountText(collection, productCount)}
         </p>
       </div>
