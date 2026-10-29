@@ -9,3 +9,6 @@ storefront-graphql-env.d.ts
 customer-account-graphql-env.d.ts
 
 .shopify
+
+# TypeScript incremental build info
+*.tsbuildinfo
