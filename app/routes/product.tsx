@@ -540,7 +540,7 @@ function VariantOptions({ product }: { product: ProductData }) {
                       className={cn(
                         "relative inline-flex size-8 items-center justify-center overflow-hidden rounded-full border",
                         variantOption.selected &&
-                          "ring-primary ring-offset-background ring-2 ring-offset-2",
+                          "ring-ring ring-offset-background ring-2 ring-offset-2",
                       )}
                       style={{ backgroundColor: swatchColor }}
                     >
