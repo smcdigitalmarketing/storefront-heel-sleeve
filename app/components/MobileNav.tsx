@@ -13,6 +13,7 @@ import {
   MOBILE_NAV_DRAWER_ID,
   closeMobileNavDrawer,
   openMobileNavDrawer,
+  returnFocusOnClose,
   useDrawer,
 } from "~/lib/cart-drawer";
 
@@ -28,6 +29,7 @@ export function MobileNav() {
         side="left"
         className="w-full gap-0 sm:max-w-sm"
         data-testid="mobile-nav"
+        onCloseAutoFocus={returnFocusOnClose}
       >
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>

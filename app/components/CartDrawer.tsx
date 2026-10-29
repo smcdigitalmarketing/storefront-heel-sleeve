@@ -46,6 +46,7 @@ import { useCart, useCartForm } from "~/lib/cart";
 import {
   CART_DRAWER_ID,
   configureOpenCartAction,
+  returnFocusOnClose,
   useDrawer,
 } from "~/lib/cart-drawer";
 import { formatPrice } from "~/lib/money";
@@ -408,6 +409,7 @@ export function CartDrawer() {
           side="right"
           className="w-full gap-0 sm:max-w-md"
           data-testid="cart-drawer"
+          onCloseAutoFocus={returnFocusOnClose}
         >
           <SheetHeader>
             <div

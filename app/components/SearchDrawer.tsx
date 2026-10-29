@@ -42,6 +42,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import {
   SEARCH_DRAWER_ID,
   closeSearchDrawer,
+  returnFocusOnClose,
   useDrawer,
 } from "~/lib/cart-drawer";
 import { formatPrice } from "~/lib/money";
@@ -85,6 +86,7 @@ function SearchSheet() {
         side="right"
         className="w-full gap-0 sm:max-w-md"
         data-testid="search-drawer"
+        onCloseAutoFocus={returnFocusOnClose}
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           inputRef.current?.focus();

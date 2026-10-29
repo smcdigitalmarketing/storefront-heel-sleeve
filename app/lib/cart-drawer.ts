@@ -12,6 +12,24 @@ export type DrawerId =
 // drawer closes the others.
 let openId: DrawerId | null = null;
 const listeners = new Set<() => void>();
+// Where focus goes back to on close. Radix only restores focus to a
+// SheetTrigger, and these drawers open from links, buttons and code.
+let returnFocusTo: HTMLElement | null = null;
+// The last element focused outside a sheet. Add to cart disables its button
+// while the cart updates, which drops focus to <body> before the cart opens.
+let lastFocusedOutside: HTMLElement | null = null;
+
+if (typeof document !== "undefined") {
+  document.addEventListener("focusin", (event) => {
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      !target.closest('[data-slot="sheet-content"]')
+    ) {
+      lastFocusedOutside = target;
+    }
+  });
+}
 
 let openCartActionConfigured = false;
 let openCartActionRetryQueued = false;
@@ -42,7 +60,23 @@ export function useDrawer(id: DrawerId): [boolean, (open: boolean) => void] {
 }
 
 export function openDrawer(id: DrawerId): void {
+  if (openId === null && typeof document !== "undefined") {
+    const active = document.activeElement;
+    returnFocusTo =
+      active instanceof HTMLElement && active !== document.body
+        ? active
+        : lastFocusedOutside;
+  }
   setOpenId(id);
+}
+
+/** Pass as a SheetContent's `onCloseAutoFocus` to return focus to where the drawer was opened from. */
+export function returnFocusOnClose(event: Event): void {
+  const target = returnFocusTo;
+  returnFocusTo = null;
+  if (!target?.isConnected) return;
+  event.preventDefault();
+  target.focus();
 }
 
 export function closeDrawer(id: DrawerId): void {
