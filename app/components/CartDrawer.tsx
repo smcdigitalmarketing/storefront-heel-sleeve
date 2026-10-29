@@ -1,42 +1,93 @@
 import { ShopPayButton } from "@shopify/hydrogen/react";
-import { useEffect, useMemo, useState, type SubmitEvent } from "react";
+import {
+  MinusIcon,
+  PlusIcon,
+  ShoppingBagIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type SubmitEvent } from "react";
 import { Link } from "react-router";
 
+import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { ButtonGroup } from "~/components/ui/button-group";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
+import { Input } from "~/components/ui/input";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "~/components/ui/item";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { Separator } from "~/components/ui/separator";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "~/components/ui/sheet";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useCart, useCartForm } from "~/lib/cart";
-import { closeCartDrawer, configureOpenCartAction, CART_DRAWER_ID } from "~/lib/cart-drawer";
+import {
+  CART_DRAWER_ID,
+  configureOpenCartAction,
+  useDrawer,
+} from "~/lib/cart-drawer";
 import { formatPrice } from "~/lib/money";
+import { cn } from "~/lib/utils";
 
 import { publishCartViewed } from "./AnalyticsTrackers";
 
-function CartErrorBanner() {
+// Focus lands here when the last line is removed, since the removed line held focus.
+const CART_DRAWER_FOCUS_ID = "cart-drawer-heading";
+
+export function CartErrorBanner() {
   const errors = useCart((state) => state.errors);
   const [dismissedAt, setDismissedAt] = useState(0);
   const messages = useMemo(() => {
-    const lines = [...errors.lines.values()].flatMap((group) => group.userErrors);
-    return [...errors.network, ...errors.cart.userErrors, ...lines].map((error) => error.message);
+    const lines = [...errors.lines.values()].flatMap(
+      (group) => group.userErrors,
+    );
+    return [...errors.network, ...errors.cart.userErrors, ...lines].map(
+      (error) => error.message,
+    );
   }, [errors]);
 
   if (messages.length === 0 || errors.lastUpdatedAt <= dismissedAt) return null;
 
   return (
-    <div className="border-border bg-surface-secondary mx-4 mb-2 rounded p-3 text-sm" role="alert">
-      <div className="flex items-start justify-between gap-3">
-        <div className="grid gap-1">
-          {messages.map((message) => (
-            <p key={message} className="text-critical">
-              {message}
-            </p>
-          ))}
-        </div>
-        <button
-          type="button"
-          className="button-ghost focus-visible:outline-accent rounded px-2 py-1 text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+    <Alert variant="destructive" role="alert">
+      <AlertDescription>
+        {messages.map((message) => (
+          <p key={message}>{message}</p>
+        ))}
+      </AlertDescription>
+      <AlertAction>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Dismiss"
           onClick={() => setDismissedAt(errors.lastUpdatedAt)}
         >
-          Dismiss
-        </button>
-      </div>
-    </div>
+          <XIcon aria-hidden="true" />
+        </Button>
+      </AlertAction>
+    </Alert>
   );
 }
 
@@ -45,12 +96,16 @@ function hasPendingCost(pending: {
   discountCodes: Set<string>;
   lines: Set<string>;
 }): boolean {
-  return pending.cost ?? (pending.lines.size > 0 || pending.discountCodes.size > 0);
+  return (
+    pending.cost ?? (pending.lines.size > 0 || pending.discountCodes.size > 0)
+  );
 }
 
 function useCartStatusMessage(): string {
   const pending = useCart((state) => state.pending);
-  const revalidating = useCart((state) => "revalidating" in state && state.revalidating === true);
+  const revalidating = useCart(
+    (state) => "revalidating" in state && state.revalidating === true,
+  );
   const networkErrors = useCart((state) => state.errors.network);
   const isPending = hasPendingCost(pending) || revalidating;
   const [sawPending, setSawPending] = useState(false);
@@ -90,6 +145,7 @@ export function CartLineItem({
   const merchandise = line.merchandise;
   const product = merchandise?.product;
   const pending = pendingLines.has(line.id);
+  const title = product?.title ?? merchandise?.title ?? "Product";
   const optionText = merchandise?.selectedOptions
     ?.map((option: { name: string; value: string }) => option.value)
     .join(" / ");
@@ -110,96 +166,121 @@ export function CartLineItem({
 
     const item = form.closest("li");
     const neighbour = item?.nextElementSibling ?? item?.previousElementSibling;
-    const selector = intent === "set" ? 'input[name="quantity"]' : `button[value="${intent}"]`;
+    const selector =
+      intent === "set" ? 'input[name="quantity"]' : `button[value="${intent}"]`;
     const target =
-      neighbour?.querySelector<HTMLElement>(selector) ?? document.getElementById(emptyCartFocusId);
+      neighbour?.querySelector<HTMLElement>(selector) ??
+      document.getElementById(emptyCartFocusId);
     target?.focus();
   };
 
   return (
-    <li
-      className={`flex gap-3 py-4 transition-opacity ${pending ? "opacity-60" : ""}`}
-      data-testid="cart-line"
-      {...(pending ? { "aria-busy": "true" } : {})}
-    >
-      <div className="bg-surface-secondary size-20 shrink-0 overflow-hidden">
-        {merchandise?.image ? (
-          <img
-            src={merchandise.image.url}
-            alt={merchandise.image.altText ?? product?.title ?? merchandise.title ?? ""}
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : null}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="type-body-sm text-on-surface font-medium">
-          {product?.handle ? (
-            <Link to={`/products/${product.handle}`} className="text-on-surface no-underline">
-              {product.title ?? merchandise?.title ?? "Product"}
-            </Link>
-          ) : (
-            (product?.title ?? merchandise?.title ?? "Product")
-          )}
-        </p>
-        {optionText ? <p className="text-on-surface-secondary mt-1 text-xs">{optionText}</p> : null}
-        {line.attributes
-          ?.filter((attr) => !attr.key.startsWith("_") && attr.value != null)
-          .map((attr) => (
-            <p key={attr.key} className="text-on-surface-secondary mt-1 text-xs italic">
-              {attr.key}: {attr.value}
-            </p>
-          ))}
-        <p className={`text-on-surface mt-2 text-sm ${pending ? "opacity-50" : ""}`}>
-          {formatPrice(line.cost.totalAmount)}
-        </p>
-        <form
-          {...formProps({ beforeSubmit: moveFocusBeforeRemoval })}
-          className="mt-3 flex items-center gap-2"
-        >
-          <button {...register("set")} />
-          <input type="hidden" {...register("lineId", { value: line.id })} />
-          <div className="quantity-selector-outlined rounded-input inline-flex items-center">
-            <button
-              type="submit"
-              {...register("decrease")}
-              className="text-on-surface-secondary hover:text-on-surface inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-[color,transform] motion-safe:active:scale-[0.90]"
-              aria-label={`Decrease quantity for ${product?.title ?? merchandise?.title ?? "item"}`}
-            >
-              <img src="/icons/icon-minus.svg" alt="" className="size-4" aria-hidden="true" />
-            </button>
-            <input
-              {...register("quantity", { value: line.quantity, interactive: true })}
-              className={`number-reset text-on-surface h-11 w-12 rounded-none border-0 bg-transparent p-0 text-center text-sm ${pending ? "opacity-50" : ""}`}
-              aria-label="Quantity"
-              aria-describedby={lineError?.userErrors.length ? errorId : undefined}
-              aria-invalid={lineError?.userErrors.length ? true : undefined}
+    <li data-testid="cart-line" {...(pending ? { "aria-busy": "true" } : {})}>
+      <Item
+        size="sm"
+        className={cn("items-start px-0", pending && "opacity-60")}
+      >
+        <ItemMedia variant="image" className="bg-muted size-20">
+          {merchandise?.image ? (
+            <img
+              src={merchandise.image.url}
+              alt={merchandise.image.altText ?? title}
+              loading="lazy"
             />
-            <button
-              type="submit"
-              {...register("increase")}
-              className="text-on-surface-secondary hover:text-on-surface inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-[color,transform] motion-safe:active:scale-[0.90]"
-              aria-label={`Increase quantity for ${product?.title ?? merchandise?.title ?? "item"}`}
-            >
-              <img src="/icons/icon-plus.svg" alt="" className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-          <button
-            type="submit"
-            {...register("remove")}
-            className="text-on-surface-secondary hover:text-on-surface inline-flex size-11 items-center justify-center rounded motion-safe:transition-[color,transform] motion-safe:active:scale-[0.90]"
-            aria-label={`Remove ${product?.title ?? merchandise?.title ?? "item"}`}
+          ) : null}
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>
+            {product?.handle ? (
+              <Link to={`/products/${product.handle}`}>{title}</Link>
+            ) : (
+              title
+            )}
+          </ItemTitle>
+          {optionText ? <ItemDescription>{optionText}</ItemDescription> : null}
+          {line.attributes
+            ?.filter((attr) => !attr.key.startsWith("_") && attr.value != null)
+            .map((attr) => (
+              <ItemDescription key={attr.key} className="italic">
+                {attr.key}: {attr.value}
+              </ItemDescription>
+            ))}
+          <p className="text-sm">{formatPrice(line.cost.totalAmount)}</p>
+          <form
+            {...formProps({ beforeSubmit: moveFocusBeforeRemoval })}
+            className="mt-2 flex items-center gap-2"
           >
-            <img src="/icons/icon-trash.svg" alt="" className="size-5" aria-hidden="true" />
-          </button>
-        </form>
-        {lineError?.userErrors.length ? (
-          <p id={errorId} className="text-critical mt-2 text-sm" role="alert">
-            {lineError.userErrors[0]?.message}
-          </p>
-        ) : null}
-      </div>
+            <Button {...register("set")} />
+            <input type="hidden" {...register("lineId", { value: line.id })} />
+            <ButtonGroup aria-label={`Quantity for ${title}`}>
+              <Button
+                type="submit"
+                variant="outline"
+                size="icon"
+                {...register("decrease")}
+                aria-label={`Decrease quantity for ${title}`}
+              >
+                <MinusIcon aria-hidden="true" />
+              </Button>
+              <Input
+                {...register("quantity", {
+                  value: line.quantity,
+                  interactive: true,
+                })}
+                className="w-12 text-center"
+                aria-label="Quantity"
+                aria-describedby={
+                  lineError?.userErrors.length ? errorId : undefined
+                }
+                aria-invalid={lineError?.userErrors.length ? true : undefined}
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                size="icon"
+                {...register("increase")}
+                aria-label={`Increase quantity for ${title}`}
+              >
+                <PlusIcon aria-hidden="true" />
+              </Button>
+            </ButtonGroup>
+            <ItemActions>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                {...register("remove")}
+                aria-label={`Remove ${title}`}
+              >
+                <Trash2Icon aria-hidden="true" />
+              </Button>
+            </ItemActions>
+          </form>
+          {lineError?.userErrors.length ? (
+            <p id={errorId} className="text-destructive text-sm" role="alert">
+              {lineError.userErrors[0]?.message}
+            </p>
+          ) : null}
+        </ItemContent>
+      </Item>
     </li>
+  );
+}
+
+export function CartEmpty({ action }: { action: ReactNode }) {
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <ShoppingBagIcon aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>Your cart is empty.</EmptyTitle>
+        <EmptyDescription>
+          Looks like you haven&apos;t added anything to your cart yet.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>{action}</EmptyContent>
+    </Empty>
   );
 }
 
@@ -208,86 +289,107 @@ function CartLines() {
   const lines = useCart((state) => state.data.lines.nodes);
 
   if (loading) {
-    return <p className="text-on-surface-secondary type-body-sm">Loading cart…</p>;
-  }
-
-  if (lines.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-center">
-        <p className="text-on-surface font-medium">Your cart is empty.</p>
-        <p className="text-on-surface-secondary mt-2 text-sm">
-          Looks like you haven&apos;t added anything to your cart yet.
-        </p>
+      <div className="flex flex-col gap-4" aria-label="Loading cart">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
       </div>
     );
   }
 
+  if (lines.length === 0) {
+    return (
+      <CartEmpty
+        action={
+          <SheetClose asChild>
+            <Button asChild variant="outline">
+              <Link to="/collections">Continue shopping</Link>
+            </Button>
+          </SheetClose>
+        }
+      />
+    );
+  }
+
   return (
-    <ul role="list" className="divide-border -mt-4 divide-y">
+    <ul role="list" className="divide-border divide-y">
       {lines.map((line) => (
-        <CartLineItem key={line.id} line={line} emptyCartFocusId="cart-drawer-title" />
+        <CartLineItem
+          key={line.id}
+          line={line}
+          emptyCartFocusId={CART_DRAWER_FOCUS_ID}
+        />
       ))}
     </ul>
   );
 }
 
-function CartFooter() {
+export function CartTotals({ isPending }: { isPending: boolean }) {
   const cart = useCart((state) => state.data);
-  const pending = useCart((state) => state.pending);
-  const revalidating = useCart((state) => "revalidating" in state && state.revalidating === true);
-  const hasLines = cart.lines.nodes.length > 0;
-  const isPending = hasPendingCost(pending) || revalidating;
-
-  if (!hasLines) return null;
 
   return (
-    <div className="border-border shrink-0 border-t p-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between" aria-busy={isPending}>
-          <span className="text-on-surface text-sm font-medium">
-            Estimated total
-            {isPending ? <span aria-hidden="true"> (updating)</span> : null}
-          </span>
-          <span
-            className={`text-on-surface text-base font-medium ${isPending ? "text-on-surface-secondary" : ""}`}
-          >
-            {formatPrice(cart.cost.totalAmount)}
-          </span>
-        </div>
-        <p className="text-on-surface-secondary text-xs">
-          Taxes and shipping calculated at checkout
-        </p>
-        {cart.checkoutUrl ? (
-          <>
-            <ShopPayButton width="100%" borderRadius="8px" />
-            <a
-              href={cart.checkoutUrl}
-              className="rounded-button button-primary focus-visible:outline-accent inline-flex h-11 w-full items-center justify-center gap-2 px-4 text-sm font-medium no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97]"
-            >
-              Checkout
-            </a>
-          </>
-        ) : null}
+    <div className="flex flex-col gap-3">
+      <div
+        className="flex items-center justify-between font-medium"
+        aria-busy={isPending}
+      >
+        <span>
+          Estimated total
+          {isPending ? <span aria-hidden="true"> (updating)</span> : null}
+        </span>
+        <span className={cn("text-base", isPending && "text-muted-foreground")}>
+          {formatPrice(cart.cost.totalAmount)}
+        </span>
       </div>
+      <p className="text-muted-foreground text-xs">
+        Taxes and shipping calculated at checkout
+      </p>
+      {cart.checkoutUrl ? (
+        <>
+          <ShopPayButton width="100%" borderRadius="8px" />
+          <Button asChild size="lg" className="w-full">
+            <a href={cart.checkoutUrl}>Checkout</a>
+          </Button>
+        </>
+      ) : null}
     </div>
   );
 }
 
+function CartFooter() {
+  const hasLines = useCart((state) => state.data.lines.nodes.length > 0);
+  const pending = useCart((state) => state.pending);
+  const revalidating = useCart(
+    (state) => "revalidating" in state && state.revalidating === true,
+  );
+
+  if (!hasLines) return null;
+
+  return (
+    <>
+      <Separator />
+      <SheetFooter>
+        <CartTotals isPending={hasPendingCost(pending) || revalidating} />
+      </SheetFooter>
+    </>
+  );
+}
+
 export function CartDrawer() {
+  const [open, setOpen] = useDrawer(CART_DRAWER_ID);
   const totalQuantity = useCart((state) => state.data.totalQuantity);
   const cart = useCart((state) => state.data);
   const statusMessage = useCartStatusMessage();
+  const cartRef = useRef(cart);
+  cartRef.current = cart;
 
   useEffect(() => {
     configureOpenCartAction();
-    const dialog = document.getElementById(CART_DRAWER_ID);
-    if (!(dialog instanceof HTMLDialogElement)) return;
-    const handleToggle = () => {
-      if (dialog.open) publishCartViewed(cart);
-    };
-    dialog.addEventListener("toggle", handleToggle);
-    return () => dialog.removeEventListener("toggle", handleToggle);
-  }, [cart]);
+  }, []);
+
+  useEffect(() => {
+    if (open) publishCartViewed(cartRef.current);
+  }, [open]);
 
   return (
     <>
@@ -300,43 +402,35 @@ export function CartDrawer() {
       >
         {statusMessage}
       </span>
-      <dialog
-        id={CART_DRAWER_ID}
-        className="drawer-right bg-surface text-on-surface"
-        aria-labelledby="cart-drawer-title"
-        data-testid="cart-drawer"
-        closedby="any"
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex shrink-0 items-center py-2 ps-4">
-            <div className="flex flex-1 items-center gap-2">
-              <h2
-                id="cart-drawer-title"
-                tabIndex={-1}
-                className="text-on-surface text-lg font-medium"
-              >
-                Cart
-              </h2>
-              <span className="cart-count-badge">{totalQuantity}</span>
-            </div>
-            <button
-              type="button"
-              commandfor={CART_DRAWER_ID}
-              command="close"
-              className="button-icon focus-visible:outline-accent inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97]"
-              aria-label="Close"
-              onClick={() => closeCartDrawer()}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          id={CART_DRAWER_ID}
+          side="right"
+          className="w-full gap-0 sm:max-w-md"
+          data-testid="cart-drawer"
+        >
+          <SheetHeader>
+            <div
+              id={CART_DRAWER_FOCUS_ID}
+              tabIndex={-1}
+              className="flex items-center gap-2 outline-none"
             >
-              <img src="/icons/icon-x.svg" alt="" className="size-5" aria-hidden="true" />
-            </button>
+              <SheetTitle className="text-lg">Cart</SheetTitle>
+              <Badge variant="secondary">{totalQuantity}</Badge>
+            </div>
+            <SheetDescription className="sr-only">
+              Items in your cart
+            </SheetDescription>
+          </SheetHeader>
+          <div className="px-4">
+            <CartErrorBanner />
           </div>
-          <CartErrorBanner />
-          <div className="flex-1 overflow-y-auto p-4">
+          <ScrollArea className="min-h-0 flex-1 px-4">
             <CartLines />
-          </div>
+          </ScrollArea>
           <CartFooter />
-        </div>
-      </dialog>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

@@ -1,46 +1,58 @@
 import { Link } from "react-router";
 
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import type { StorefrontShop } from "~/lib/storefront-shop";
+import { cn } from "~/lib/utils";
 
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
 
-const linkClass =
-  "min-h-touch-target text-on-surface-secondary hover:text-on-surface focus-visible:outline-accent inline-flex items-center font-normal no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-colors";
+const FOOTER_LINKS = [
+  { to: "/search", label: "Search" },
+  { to: "/account", label: "Account" },
+];
 
 export function Footer({ shopInfo }: { shopInfo: StorefrontShop }) {
+  const hasPaymentMethods = shopInfo.paymentMethods.length > 0;
+
   return (
-    <footer className="max-w-page px-margin mx-auto w-full">
+    <footer className="mx-auto w-full max-w-7xl px-4">
+      <Separator />
       <div
-        className={`border-border grid grid-cols-1 gap-8 border-t py-12 text-sm md:grid-cols-2 ${shopInfo.paymentMethods.length > 0 ? "lg:grid-cols-3" : ""}`}
+        className={cn(
+          "grid grid-cols-1 gap-8 py-12 text-sm md:grid-cols-2",
+          hasPaymentMethods && "lg:grid-cols-3",
+        )}
       >
         <div className="min-w-0 wrap-anywhere">
-          <h2 className="type-body-sm text-on-surface mb-4 font-medium">{shopInfo.name}</h2>
+          <h2 className="font-heading mb-4 font-medium">{shopInfo.name}</h2>
         </div>
         <nav aria-labelledby="footer-customer-care-heading">
           <h2
-            className="type-body-sm text-on-surface mb-4 font-medium"
+            className="font-heading mb-4 font-medium"
             id="footer-customer-care-heading"
           >
             Customer care
           </h2>
-          <ul role="list" className="flex flex-col gap-2">
-            <li>
-              <Link to="/search" className={linkClass}>
-                Search
-              </Link>
-            </li>
-            <li>
-              <Link to="/account" className={linkClass}>
-                Account
-              </Link>
-            </li>
+          <ul role="list" className="flex flex-col gap-1">
+            {FOOTER_LINKS.map((link) => (
+              <li key={link.to}>
+                <Button
+                  asChild
+                  variant="link"
+                  className="text-muted-foreground h-11 px-0"
+                >
+                  <Link to={link.to}>{link.label}</Link>
+                </Button>
+              </li>
+            ))}
           </ul>
         </nav>
-        {shopInfo.paymentMethods.length > 0 ? (
+        {hasPaymentMethods ? (
           <div>
             <h2
               id="footer-payment-methods-heading"
-              className="type-body-sm text-on-surface mb-4 font-medium"
+              className="font-heading mb-4 font-medium"
             >
               Payment methods
             </h2>

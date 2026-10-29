@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { Badge } from "~/components/ui/badge";
 import { getPaymentMethodIconUrl } from "~/lib/payment-icons";
 import type { PaymentMethodLabel } from "~/lib/storefront-shop";
 
@@ -9,9 +10,9 @@ export function PaymentMethodIcon({ method }: { method: PaymentMethodLabel }) {
 
   if (!src || src === failedSrc) {
     return (
-      <span className="border-border text-on-surface-secondary inline-flex min-h-6 max-w-full items-center rounded-sm border px-2 text-xs wrap-anywhere">
+      <Badge variant="outline" className="max-w-full wrap-anywhere">
         {method}
-      </span>
+      </Badge>
     );
   }
 

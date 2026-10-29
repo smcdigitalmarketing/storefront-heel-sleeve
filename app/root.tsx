@@ -12,21 +12,33 @@ import {
   useRouteLoaderData,
 } from "react-router";
 
-import { CartAnalyticsTracker, PageViewedTracker } from "~/components/AnalyticsTrackers";
+import {
+  CartAnalyticsTracker,
+  PageViewedTracker,
+} from "~/components/AnalyticsTrackers";
 import { AnnouncementBar } from "~/components/AnnouncementBar";
 import { CartDrawer } from "~/components/CartDrawer";
 import { Footer } from "~/components/Footer";
 import { Header } from "~/components/Header";
 import { SearchDrawer } from "~/components/SearchDrawer";
+import { Toaster } from "~/components/ui/sonner";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import { CartProvider } from "~/lib/cart";
 import { cartHandlers } from "~/lib/cart-handlers";
-import { createRequestCustomerAccount, customerAccountContext } from "~/lib/customer-account";
+import {
+  createRequestCustomerAccount,
+  customerAccountContext,
+} from "~/lib/customer-account";
 import { envContext } from "~/lib/env";
 import { predictiveSearchHandlers } from "~/lib/predictive-search-handlers";
 import { loadRootLayout } from "~/lib/root-layout";
 import { routeTemplates } from "~/lib/route-templates";
 import { createEphemeralSessionManager } from "~/lib/session";
-import { analyticsConsent, resolveShopIdentity, storefrontConfig } from "~/lib/shop";
+import {
+  analyticsConsent,
+  resolveShopIdentity,
+  storefrontConfig,
+} from "~/lib/shop";
 import {
   createRequestStorefrontClient,
   storefrontClientContext,
@@ -52,9 +64,14 @@ export const middleware: Route.MiddlewareFunction[] = [
       context.waitUntil,
     );
     const requestContext = storefrontClient.requestContext;
-    const customerAccount = await createRequestCustomerAccount(request, env, requestContext);
+    const customerAccount = await createRequestCustomerAccount(
+      request,
+      env,
+      requestContext,
+    );
     const sessionManager =
-      customerAccount?.customerAccount.sessionManager ?? createEphemeralSessionManager(request);
+      customerAccount?.customerAccount.sessionManager ??
+      createEphemeralSessionManager(request);
 
     const shopifyRoute = handleShopifyRoutes({
       request,
@@ -71,11 +88,17 @@ export const middleware: Route.MiddlewareFunction[] = [
 
     context.set(storefrontClientContext, storefrontClient);
     context.set(storefrontRequestContext, requestContext);
-    context.set(customerAccountContext, customerAccount?.customerAccount ?? null);
+    context.set(
+      customerAccountContext,
+      customerAccount?.customerAccount ?? null,
+    );
 
     const response = await next();
-    const sessionHeaders = new Headers((await sessionManager.commit?.()) ?? undefined);
-    for (const [name, value] of sessionHeaders) response.headers.append(name, value);
+    const sessionHeaders = new Headers(
+      (await sessionManager.commit?.()) ?? undefined,
+    );
+    for (const [name, value] of sessionHeaders)
+      response.headers.append(name, value);
     if (response.status === 404) {
       const redirect = await handleShopifyRedirects({
         request,
@@ -131,14 +154,15 @@ export function Layout({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-surface text-on-surface font-body flex min-h-svh flex-col antialiased">
+      <body className="flex min-h-svh flex-col antialiased">
         <a
           href="#main-content"
-          className="focus-visible:bg-interactive focus-visible:text-interactive-text sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:start-4 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded focus-visible:px-4 focus-visible:py-2"
+          className="focus-visible:bg-primary focus-visible:text-primary-foreground sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:start-4 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:px-4 focus-visible:py-2"
         >
           Skip to content
         </a>
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -169,7 +193,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
     details =
-      error.status === 404 ? "The requested page could not be found." : error.statusText || details;
+      error.status === 404
+        ? "The requested page could not be found."
+        : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
@@ -179,12 +205,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="max-w-page px-margin mx-auto w-full flex-1 py-12"
+      className="mx-auto w-full max-w-7xl flex-1 px-4 py-12"
     >
-      <h1 className="type-display text-on-surface">{message}</h1>
-      <p className="text-on-surface-secondary mt-4">{details}</p>
+      <h1 className="font-heading text-4xl font-semibold tracking-tight">
+        {message}
+      </h1>
+      <p className="text-muted-foreground mt-4">{details}</p>
       {stack ? (
-        <pre className="border-border mt-6 w-full overflow-x-auto rounded border p-4 text-sm">
+        <pre className="bg-muted mt-6 w-full overflow-x-auto rounded-lg border p-4 text-sm">
           <code>{stack}</code>
         </pre>
       ) : null}

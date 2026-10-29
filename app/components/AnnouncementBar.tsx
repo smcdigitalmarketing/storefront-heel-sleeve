@@ -14,17 +14,15 @@ export function AnnouncementBar() {
     <div
       role="region"
       aria-label="Announcement"
-      className="bg-on-surface px-margin py-2.5 text-center"
+      className="bg-primary text-primary-foreground px-4 py-2.5 text-center text-sm"
     >
       <ul role="list">
         {ANNOUNCEMENTS.map((announcement, index) => (
-          <AnnouncementBarItem key={index} {...announcement} />
+          <li key={index} className="wrap-anywhere">
+            {announcement.content}
+          </li>
         ))}
       </ul>
     </div>
   );
-}
-
-function AnnouncementBarItem({ content }: Announcement) {
-  return <li className="type-body-sm text-surface wrap-anywhere">{content}</li>;
 }

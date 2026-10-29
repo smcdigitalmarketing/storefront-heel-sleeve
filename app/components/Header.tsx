@@ -1,8 +1,22 @@
+import { SearchIcon, ShoppingBagIcon, UserIcon } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from "~/components/ui/navigation-menu";
 import { useCart } from "~/lib/cart";
-import { CART_DRAWER_ID, SEARCH_DRAWER_ID, openDialogFromLinkClick } from "~/lib/cart-drawer";
+import {
+  CART_DRAWER_ID,
+  SEARCH_DRAWER_ID,
+  openDrawerFromLinkClick,
+} from "~/lib/cart-drawer";
 import type { StorefrontShop } from "~/lib/storefront-shop";
 
 import { MobileNav, MobileNavTrigger } from "./MobileNav";
@@ -25,20 +39,17 @@ export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
   const logo = shopInfo.logo;
 
   return (
-    <header className="border-border bg-surface sticky top-0 z-40 border-b">
-      <div
-        className="max-w-page px-margin mx-auto flex h-16 w-full items-center justify-between"
-        data-header-nav-group
-      >
+    <header className="bg-background sticky top-0 z-40 border-b">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex min-w-0 flex-1 items-center gap-2 pe-3 md:max-w-48 md:flex-none md:pe-0">
-          <div className="-ms-2 hidden shrink-0 max-md:block" data-hamburger-wrapper>
+          <div className="-ms-2 md:hidden">
             <MobileNavTrigger />
           </div>
           <Link
             to="/"
             aria-label={shopInfo.name}
             title={shopInfo.name}
-            className="text-on-surface focus-visible:outline-accent inline-flex max-w-48 min-w-0 items-center rounded-sm text-lg font-medium no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="font-heading focus-visible:ring-ring/50 inline-flex max-w-48 min-w-0 items-center rounded-md text-lg font-medium outline-none focus-visible:ring-3"
           >
             {logo && failedLogoUrl !== logo.url ? (
               <img
@@ -49,69 +60,77 @@ export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
                 className="h-auto max-h-10 w-auto max-w-full object-contain"
                 // An SSR image can fail before hydration attaches onError, so also check on mount.
                 ref={(img) => {
-                  if (img?.complete && img.naturalWidth === 0) setFailedLogoUrl(logo.url);
+                  if (img?.complete && img.naturalWidth === 0)
+                    setFailedLogoUrl(logo.url);
                 }}
                 onError={() => setFailedLogoUrl(logo.url)}
               />
             ) : (
-              <span className="line-clamp-2 leading-tight wrap-anywhere">{shopInfo.name}</span>
+              <span className="line-clamp-2 leading-tight wrap-anywhere">
+                {shopInfo.name}
+              </span>
             )}
           </Link>
         </div>
 
-        <nav
+        <NavigationMenu
           aria-label="Main navigation"
-          className="mx-8 hidden min-w-0 flex-1 items-center gap-8 overflow-x-auto md:flex"
-          data-desktop-nav
+          className="mx-8 hidden flex-1 md:flex"
         >
-          <Link
-            to="/collections"
-            className="text-on-surface focus-visible:outline-accent shrink-0 rounded-sm text-sm font-normal whitespace-nowrap no-underline hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-opacity"
-          >
-            Collections
-          </Link>
-        </nav>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={navigationMenuTriggerStyle()}
+              >
+                <Link to="/collections">Collections</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
-        <div className="flex shrink-0 items-center gap-0">
-          <Link
-            to="/search"
-            className="button-icon focus-visible:outline-accent inline-flex h-11 w-11 cursor-pointer items-center justify-center gap-2 rounded font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-[color,background-color,border-color,transform] motion-safe:active:scale-[0.97]"
-            aria-label="Search"
-            aria-controls={SEARCH_DRAWER_ID}
-            aria-haspopup="dialog"
-            data-testid="search-trigger"
-            onClick={(event) => openDialogFromLinkClick(event, SEARCH_DRAWER_ID)}
-          >
-            <img src="/icons/icon-search.svg" alt="" className="size-5" aria-hidden="true" />
-          </Link>
-          <Link
-            to="/account"
-            className="text-on-surface focus-visible:outline-accent inline-flex h-11 w-11 items-center justify-center rounded hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-opacity"
-            aria-label="Account"
-          >
-            <img src="/icons/icon-user.svg" alt="" className="size-5" aria-hidden="true" />
-          </Link>
-          <Link
-            to="/cart"
-            className="text-on-surface focus-visible:outline-accent relative inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition motion-safe:active:scale-[0.97]"
-            aria-label={cartCountLabel(totalQuantity)}
-            aria-controls={CART_DRAWER_ID}
-            aria-haspopup="dialog"
-            data-testid="cart-trigger"
-            onClick={(event) => openDialogFromLinkClick(event, CART_DRAWER_ID)}
-          >
-            <span
-              className="relative inline-flex size-5 shrink-0 items-center justify-center"
-              aria-hidden="true"
+        <div className="flex shrink-0 items-center">
+          <Button asChild variant="ghost" size="icon-lg">
+            <Link
+              to="/search"
+              aria-label="Search"
+              aria-controls={SEARCH_DRAWER_ID}
+              aria-haspopup="dialog"
+              data-testid="search-trigger"
+              onClick={(event) =>
+                openDrawerFromLinkClick(event, SEARCH_DRAWER_ID)
+              }
             >
-              <img src="/icons/icon-cart.svg" alt="" className="size-5" />
+              <SearchIcon className="size-5" aria-hidden="true" />
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="icon-lg">
+            <Link to="/account" aria-label="Account">
+              <UserIcon className="size-5" aria-hidden="true" />
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="icon-lg" className="relative">
+            <Link
+              to="/cart"
+              aria-label={cartCountLabel(totalQuantity)}
+              aria-controls={CART_DRAWER_ID}
+              aria-haspopup="dialog"
+              data-testid="cart-trigger"
+              onClick={(event) =>
+                openDrawerFromLinkClick(event, CART_DRAWER_ID)
+              }
+            >
+              <ShoppingBagIcon className="size-5" aria-hidden="true" />
               {totalQuantity > 0 ? (
-                <span className="bg-interactive text-interactive-text absolute end-0 top-0 flex h-5 min-w-5 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full px-1 text-xs font-medium">
+                <Badge
+                  aria-hidden="true"
+                  className="absolute -end-0.5 -top-0.5 min-w-5 px-1"
+                >
                   {displayCount(totalQuantity)}
-                </span>
+                </Badge>
               ) : null}
-            </span>
-          </Link>
+            </Link>
+          </Button>
           <span aria-live="polite" aria-atomic="true" className="sr-only">
             {liveCartCountLabel(totalQuantity)}
           </span>
