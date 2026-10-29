@@ -1,6 +1,6 @@
-# Storefront
+# Rally storefront
 
-A Shopify Hydrogen storefront on Oxygen. It's built from Shopify's
+The Shopify Hydrogen storefront on Oxygen for the Rally youth heel support sleeve. The brand direction (copy, palette, fonts, layout) comes from the retro-camera `apps/recoverx`, concept `rally` mock store. It's built from Shopify's
 [Hydrogen React Router template](https://github.com/Shopify/hydrogen/tree/main/templates/react-router)
 (React Router 7 in framework mode with SSR, plus Vite and Mini Oxygen), and every
 piece of UI is restyled with [shadcn/ui](https://ui.shadcn.com) on Tailwind CSS v4.

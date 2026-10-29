@@ -53,3 +53,10 @@ Hydrogen's `ShopPayButton` is used as it is.
   counts.
 - Placeholder proof (ratings, reviews, press) stays labelled until real data
   replaces it.
+
+## Brand: Rally
+
+This storefront sells the Rally youth heel support sleeve. Its design and copy come from the retro-camera `apps/recoverx`, concept `rally` mock store. Its theme lives in `app/app.css`.
+
+- No medical or health claims. Don't name conditions (Sever's disease, growth plates), promise pain relief or recovery, or cite doctors or clinicians. Describe the sleeve mechanically and point parents to a doctor or physio.
+- Lime (`primary`) is a fill colour only: it reads at 1.16:1 as text on Chalk. Links use `foreground` text with a lime underline (see the `link` variants in `components/ui/button.tsx` and `badge.tsx`).
