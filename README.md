@@ -1,141 +1,89 @@
-# Hydrogen React Router template
+# Storefront
 
-[![Deploy to Oxygen](../../.github/images/deploy-to-oxygen.svg)](https://admin.shopify.com/hydrogen/new?template=react-router)
-
-A React Router 7 (framework mode, SSR) storefront built on
-[`@shopify/hydrogen`](https://www.npmjs.com/package/@shopify/hydrogen) and the
-Oxygen runtime through Vite and Mini Oxygen. It's a starting point you can clone
-and build your store on top of — five pages on a shared layout, with a real cart,
-analytics, and a consent banner wired up.
+A Shopify Hydrogen storefront on Oxygen. It's built from Shopify's
+[Hydrogen React Router template](https://github.com/Shopify/hydrogen/tree/main/templates/react-router)
+(React Router 7 in framework mode with SSR, plus Vite and Mini Oxygen), and every
+piece of UI is restyled with [shadcn/ui](https://ui.shadcn.com) on Tailwind CSS v4.
 
 ## Pages
 
-- `/` — home (editorial hero, new arrivals, shop by category)
-- `/products/:handle` — product detail (gallery, variants, add to cart, Shop Pay)
-- `/collections` — all collections
-- `/collections/:handle` — collection with filters, sort, and pagination
-- `/search` — product search with the same filtering (also the no-JS fallback for the
-  predictive search drawer)
-- `/cart` — cart with Shop Pay (also the no-JS fallback for the cart drawer)
-- `/account` — Customer Account sign-in, log out, and order history
-
-## What it demonstrates
-
-- Server `loader`s as the data path; each route owns its GraphQL query (typed via
-  `gql.tada`).
-- A real cart: storefront client + request handlers + `/api/cart` + an accessible
-  cart drawer wired to Shopify Standard Actions.
-- A shared layout (header with mobile nav, footer, optional announcement bar).
-- Predictive search: Hydrogen's `/api/predictive-search` handler + an accessible
-  search drawer that suggests products as you type and falls back to the
-  `/search` page without JavaScript.
-- Analytics + a consent banner.
-- Customer Accounts: Hydrogen's `/account/login`, `/account/authorize`,
-  `/account/refresh`, and `/account/logout` handlers, backed by a signed cookie
-  session (`app/lib/session.ts`). Needs a real store, `SHOP_ID`,
-  `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`, `SESSION_SECRET`, and HTTPS.
-- The design tokens in `app/tokens.css` and SVG icons in `public/icons/`.
+- `/`: home
+- `/products/:handle`: product detail (gallery, variants, add to cart, Shop Pay)
+- `/collections` and `/collections/:handle`: collections, with filters, sort and
+  pagination
+- `/search`: product search, also the no-JS fallback for the search drawer
+- `/cart`: cart page, also the no-JS fallback for the cart drawer
+- `/account`: Customer Account sign-in, log out and order history
 
 ## Run it
 
-Requires Node.js 22 (22.12 or later) or Node.js 24.
+Node.js 22 (22.12 or later) or 24.
 
 ```bash
 npm install
-```
-
-**Zero-config demo** — runs against `mock.shop` (a public mock Storefront API, no
-account or token needed):
-
-```bash
-cp .env.example .env
-# uncomment MOCK_SHOP=1 in .env
-npm run dev
-```
-
-`mock.shop` is a catalog of fictional stores, each on its own host. The default at
-`mock.shop` sells apparel basics; the directory at
-[mock.shop/llms.txt](https://mock.shop/llms.txt) lists every other store with what it
-sells. To build against one of them, set `PUBLIC_STORE_DOMAIN` to its host (for
-example `pets.mock.shop`) and leave the token empty.
-
-**Against a real store** — link a Hydrogen storefront and pull its environment
-variables into `.env`, then run normally:
-
-```bash
-npx shopify hydrogen link       # skip if the project is already linked
+npx shopify hydrogen link       # once: connect this folder to the store's Hydrogen storefront
 npx shopify hydrogen env pull   # writes the storefront's variables to .env
-npm run dev                     # Vite/Mini Oxygen loads .env into the worker environment
+npm run dev                     # http://localhost:5173
 ```
 
-Oxygen creates `PUBLIC_STORE_DOMAIN`, `PUBLIC_STOREFRONT_ID`, and
-`PRIVATE_STOREFRONT_API_TOKEN` for a linked storefront, so you don't copy them by
-hand. If `env pull` reports secret values it couldn't pull, set those in `.env`. To
-use an existing **private** Storefront API token without linking, copy `.env.example`
-to `.env` and set `PUBLIC_STORE_DOMAIN` and `PRIVATE_STOREFRONT_API_TOKEN`.
-`PUBLIC_STOREFRONT_ID` is optional; providing it enables Shopify analytics for real
-stores.
+- **No store linked yet?** Without a private Storefront API token, the app shows
+  [mock.shop](https://mock.shop) demo data. You can force this with `MOCK_SHOP=1`
+  in `.env`.
+- **On Oxygen,** the linked storefront injects `PUBLIC_STORE_DOMAIN`,
+  `PUBLIC_STOREFRONT_ID` and `PRIVATE_STOREFRONT_API_TOKEN` itself.
+- **Customer Account sign-in needs trusted local HTTPS.** Run `npm run dev:https`
+  and open <https://local.tryhydrogen.dev:5173>.
 
-Customer Account OAuth requires trusted local HTTPS. Run:
+## Deploy
 
-```bash
-npm run dev:https
-```
+Pushing to `main` deploys through the GitHub Actions workflow that the Hydrogen
+channel adds (`.github/workflows/oxygen-deployment-*.yml`):
 
-Open <https://local.tryhydrogen.dev:5173>.
+- `main` goes to the production environment.
+- Other branches get preview deployments.
 
-The local HTTPS plugin provisions and reuses a trusted certificate under `~/.shopify/hydrogen/certs/` (on first run, it may prompt to install the local certificate authority), links an unlinked Hydrogen storefront, and pushes the Customer Account callback, JavaScript origin, and logout URLs. See the `hydrogen-local-https` skill for CI and manual fallback behavior.
+Oxygen environments on a development store are private. To share one, use
+**Share deployment** in the Hydrogen channel.
 
-Mode is **auto-detected**: when a `PRIVATE_STOREFRONT_API_TOKEN` is present the
-app talks to the real store (`PUBLIC_STORE_DOMAIN`, falling back to the default in
-`app/lib/shop.ts`); with none it falls back to the `mock.shop` demo, so a fresh
-deploy always renders. **On Oxygen, a linked storefront injects these env vars
-automatically** — the deployed site connects to your store with no extra config
-(and shows the `mock.shop` demo until it's linked). `MOCK_SHOP=1` forces mock, and so
-does a `mock.shop` host in `PUBLIC_STORE_DOMAIN`.
-(`mock.shop` and the Hydrogen Preview store are different data sources.)
+## Styling
 
-## Announcement bar (optional)
+shadcn/ui is the source of styling truth. The full rules are in
+[AGENTS.md](./AGENTS.md#styling-rules). In short:
 
-Add entries to `ANNOUNCEMENTS` in `app/components/AnnouncementBar.tsx`. An empty
-list hides the bar. Each entry's `content` is a React element, so it can include links:
-
-```tsx
-import { Link } from "react-router";
-
-const ANNOUNCEMENTS: Announcement[] = [
-  {
-    content: (
-      <p>
-        Discover our <Link to="/collections" className="underline">latest collections</Link>.
-      </p>
-    ),
-  },
-];
-```
-
-You can connect metafields or a CMS later with your own data loading and rendering.
-No specific metafield format is required.
+- **The theme lives in `app/app.css`:** shadcn's CSS variables, and nothing else.
+  The brand's colours, radius and fonts are set there.
+- **`app/components/ui/` holds the shadcn components.** Add more from outside the
+  repo, so the CLI doesn't pick up the local `shadcn` package:
+  `npx shadcn@latest add -c <path-to-repo> <component>`.
+- **Feature components compose shadcn components.** They use Tailwind utilities for
+  layout and theme tokens for colour (`text-muted-foreground`, `bg-primary`).
+- **No other CSS, inline styles, native form or overlay elements, or raw colours.**
+  `npm run check:styles` enforces this.
 
 ## Scripts
 
-| Script | Does |
-| --- | --- |
-| `npm run dev` | Start the Vite dev server with Mini Oxygen. |
-| `npm run dev:https` | Start the Vite dev server with trusted local HTTPS. |
-| `npm run build` | Production React Router build for Oxygen. |
-| `npm run preview` | Build and preview locally with Vite and Mini Oxygen. |
-| `npm run deploy` | Deploy to Oxygen with the Shopify CLI. |
-| `npm run typecheck` | React Router typegen + TypeScript + Hydrogen GraphQL checks. |
+| Script                 | Does                                                          |
+| ---------------------- | ------------------------------------------------------------- |
+| `npm run dev`          | Start the Vite dev server with Mini Oxygen.                   |
+| `npm run dev:https`    | Start the dev server with trusted local HTTPS.                |
+| `npm run build`        | Production React Router build for Oxygen.                     |
+| `npm run preview`      | Build and preview locally with Vite and Mini Oxygen.          |
+| `npm run deploy`       | Deploy to Oxygen with the Shopify CLI.                        |
+| `npm run typecheck`    | React Router typegen, TypeScript and Hydrogen GraphQL checks. |
+| `npm run check:styles` | Fail on any styling that doesn't come from shadcn/ui.         |
 
-## Where to start
+## Where things live
 
-- Swap the store in `app/lib/shop.ts` + `.env`.
-- Routes live in `app/routes/`; shared UI in `app/components/`; data/query helpers
-  in `app/lib/`.
-- The design is yours to change — `app/tokens.css` holds the design tokens; the
-  components use them via semantic classes.
+| What                                           | Where                                |
+| ---------------------------------------------- | ------------------------------------ |
+| Routes                                         | `app/routes/`                        |
+| Shared UI built from shadcn components         | `app/components/`                    |
+| shadcn components (generated, owned by us)     | `app/components/ui/`                 |
+| Theme (shadcn variables, brand colours, fonts) | `app/app.css`                        |
+| Data, queries and helpers                      | `app/lib/`                           |
+| Which drawer (Sheet) is open                   | `app/lib/cart-drawer.ts`             |
+| Announcement bar entries                       | `app/components/AnnouncementBar.tsx` |
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT, from Shopify's template. See [LICENSE](./LICENSE).
