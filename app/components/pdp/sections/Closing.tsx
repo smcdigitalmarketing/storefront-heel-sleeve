@@ -51,8 +51,7 @@ export function Closing() {
         <SectionHeading align="center">{brand.pdp.faqHeadline}</SectionHeading>
         {groups.map(([category, items]) => (
           <div key={category} className="mt-10">
-            {/* Tomato is for large text only, so the category label uses Cobalt. */}
-            <h3 className="mb-2 font-heading text-base font-extrabold text-primary">
+            <h3 className="mb-2 font-heading text-base font-extrabold text-highlight">
               {category}
             </h3>
             <Accordion type="single" collapsible>

@@ -23,8 +23,8 @@ shadcn/ui is the source of styling truth for this storefront.
      variant, `@theme inline`, `:root`, `.dark` and `@layer base`.
    - **A brand colour shadcn has no slot for** is added the way shadcn's theming
      docs add colours: a variable and its `-foreground` in `:root` and
-     `.dark`, mapped in `@theme inline`. An example is Flashpop's
-     `--highlight` (Tomato).
+     `.dark`, mapped in `@theme inline`. An example is Rally's
+     `--highlight` (dark lime).
    - **Brand motion** is a `--animate-*` token with its `@keyframes`, inside
      `@theme inline`. Components use the utility, such as `animate-marquee`.
    - Never add other CSS files, selectors, `<style>` tags or inline styles.
@@ -65,4 +65,4 @@ Hydrogen's `ShopPayButton` is used as it is.
 This storefront sells the Rally youth heel support sleeve. Its design and copy come from the retro-camera `apps/recoverx`, concept `rally` mock store. Its theme lives in `app/app.css`.
 
 - No medical or health claims. Don't name conditions (Sever's disease, growth plates), promise pain relief or recovery, or cite doctors or clinicians. Describe the sleeve mechanically and point parents to a doctor or physio.
-- Lime (`primary`) is a fill colour only: it reads at 1.16:1 as text on Chalk. Links use `foreground` text with a lime underline (see the `link` variants in `components/ui/button.tsx` and `badge.tsx`).
+- Lime (`primary`) is a fill colour only: it reads at 1.16:1 as text on Chalk. Links use `foreground` text with a lime underline (see the `link` variants in `components/ui/button.tsx` and `badge.tsx`). Lime-coloured text on a light ground uses `text-highlight` (dark lime); on Night (`secondary`) bands, `text-primary` is fine.

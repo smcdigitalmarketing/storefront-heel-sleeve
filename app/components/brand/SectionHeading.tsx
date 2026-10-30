@@ -33,7 +33,7 @@ export function SectionHeading({
         <p
           className={cn(
             "font-heading text-sm font-bold",
-            onDark ? "opacity-80" : "text-primary",
+            onDark ? "opacity-80" : "text-highlight",
           )}
         >
           {eyebrow}

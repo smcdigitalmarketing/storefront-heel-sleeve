@@ -116,7 +116,7 @@ function HowItWorks() {
               className="aspect-square w-full rounded-lg object-cover"
             />
             <div className="space-y-1 pt-4">
-              <p className="font-heading text-sm font-bold text-primary">
+              <p className="font-heading text-sm font-bold text-highlight">
                 Step {String(i + 1).padStart(2, "0")}
               </p>
               <h3 className="font-heading text-xl font-extrabold">
@@ -208,7 +208,7 @@ function ComparisonTable() {
                       {i === 0 ? (
                         <CheckIcon
                           aria-hidden
-                          className="size-4 shrink-0 text-primary"
+                          className="size-4 shrink-0 text-highlight"
                           strokeWidth={3}
                         />
                       ) : null}

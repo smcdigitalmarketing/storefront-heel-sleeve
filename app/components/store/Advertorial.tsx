@@ -180,7 +180,7 @@ export function AdvertorialArticle() {
             {section.cta ? (
               <Link
                 to={storePaths.how}
-                className="font-heading text-primary mt-5 inline-flex min-h-11 items-center gap-2 font-bold underline underline-offset-4"
+                className="font-heading text-highlight mt-5 inline-flex min-h-11 items-center gap-2 font-bold underline underline-offset-4"
               >
                 {section.cta}{" "}
                 <ArrowRightIcon className="size-4" aria-hidden="true" />

@@ -63,7 +63,7 @@ function TitleBlock() {
       )}
       <ProofLine />
       <h1 className="font-heading text-4xl leading-[0.95] font-extrabold tracking-[-0.03em] text-balance sm:text-5xl">
-        <span className="text-primary block">{brand.productName}:</span>{" "}
+        <span className="text-highlight block">{brand.productName}:</span>{" "}
         <span>{capitalise(brand.pdp.titleBenefit)}</span>
       </h1>
       <p className="text-muted-foreground text-base sm:text-lg">

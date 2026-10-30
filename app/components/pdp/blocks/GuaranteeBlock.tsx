@@ -37,8 +37,7 @@ export function GuaranteeBlock() {
             key={step.title}
             className="space-y-1.5 rounded-lg bg-card p-4 text-card-foreground"
           >
-            {/* Tomato is for large text only; small labels use Cobalt. */}
-            <p className="font-heading text-sm font-bold text-primary">
+            <p className="font-heading text-sm font-bold text-highlight">
               Step {i + 1}
             </p>
             <p className="font-semibold">{step.title}</p>
