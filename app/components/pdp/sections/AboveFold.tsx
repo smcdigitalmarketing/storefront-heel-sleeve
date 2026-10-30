@@ -1,8 +1,8 @@
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Gallery } from "~/components/gallery/Gallery";
 import { RatingBadge } from "~/components/proof/Rating";
 import { TrustRow } from "~/components/proof/TrustRow";
-import { Badge } from "~/components/ui/badge";
 import { brand } from "~/content/brand";
 import { money } from "~/content/offers";
 import { fillProof } from "~/content/proof";
@@ -15,58 +15,69 @@ import { BuyBox } from "./BuyBox";
 import { UnderButton } from "./UnderButton";
 
 /**
- * SOP sections 1–3 in Flashpop's "gallery-left" hero. They share one grid so
- * the buy box sits beside the gallery on desktop, but stay in SOP order in the
- * DOM and on mobile.
+ * SOP sections 1–3 in Rally's "headline-first" hero: the title block spans
+ * the page, then the gallery sits left of the price, buy box and under-button
+ * rows. They share one grid so the buy box sits beside the gallery on
+ * desktop, but stay in SOP order in the DOM and on mobile.
  */
 export function HeroSections() {
   return (
     <div
       id="top"
-      className="mx-auto grid max-w-7xl scroll-mt-20 grid-cols-1 gap-x-10 gap-y-6 px-4 pt-5 pb-12 sm:px-6 lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr] lg:gap-x-14 lg:pt-10"
+      className="mx-auto grid max-w-7xl scroll-mt-20 grid-cols-1 gap-x-10 gap-y-6 px-4 pt-5 pb-12 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:grid-rows-[auto_auto_auto_1fr] lg:gap-x-14 lg:pt-10"
     >
       <section
         data-sop-section="above-the-fold"
         aria-label="Product overview"
         className="contents"
       >
-        <div className="lg:col-start-1 lg:row-span-3 lg:row-start-1">
+        <TitleBlock className="lg:col-span-2 lg:row-start-1 lg:pb-4" />
+        <div className="lg:col-start-1 lg:row-span-3 lg:row-start-2">
           {/* top-22 clears the 4rem sticky header. */}
           <div className="lg:sticky lg:top-22">
             <Gallery />
           </div>
         </div>
-        <div className="space-y-5 lg:col-start-2 lg:row-start-1">
-          <TitleBlock />
+        <div className="space-y-5 lg:col-start-2 lg:row-start-2">
           <PriceAndBullets />
         </div>
       </section>
-      <div className="lg:col-start-2 lg:row-start-2">
+      <div className="lg:col-start-2 lg:row-start-3">
         <BuyBox />
       </div>
-      <div className="lg:col-start-2 lg:row-start-3">
+      <div className="lg:col-start-2 lg:row-start-4">
         <UnderButton />
       </div>
     </div>
   );
 }
 
-function TitleBlock() {
+/** The title block, centred above the gallery from the lg breakpoint. */
+function TitleBlock({ className }: { className?: string }) {
   const { copy } = useOffer();
 
   return (
-    <div className="space-y-3">
+    <div className={cn("space-y-3 lg:text-center", className)}>
       {copy.headline && (
-        <p className="bg-foreground font-heading text-secondary inline-flex -rotate-1 items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold">
+        <p
+          className={cn(
+            scoreLabel,
+            "bg-primary text-primary-foreground inline-flex items-center gap-2 px-2 py-1",
+          )}
+        >
           {copy.headline}
         </p>
       )}
       <ProofLine />
-      <h1 className="font-heading text-4xl leading-[0.95] font-extrabold tracking-[-0.03em] text-balance sm:text-5xl">
-        <span className="text-highlight block">{brand.productName}:</span>{" "}
-        <span>{capitalise(brand.pdp.titleBenefit)}</span>
+      <h1 className="font-heading mx-auto max-w-4xl text-[2.1rem] leading-none font-bold tracking-[-0.035em] text-balance sm:text-5xl">
+        <span
+          className={cn(scoreLabel, "text-muted-foreground mb-3 block text-sm")}
+        >
+          {brand.productName}
+        </span>
+        {capitalise(brand.pdp.titleBenefit)}
       </h1>
-      <p className="text-muted-foreground text-base sm:text-lg">
+      <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
         {brand.pdp.subheadline}
       </p>
     </div>
@@ -83,11 +94,14 @@ function capitalise(text: string) {
  */
 function ProofLine() {
   return (
-    <div className="flex flex-col gap-1.5">
-      <RatingBadge />
+    <div className="flex flex-col gap-1.5 lg:items-center">
+      <RatingBadge className="lg:justify-center" />
       <p
         data-proof="customers"
-        className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm"
+        className={cn(
+          scoreLabel,
+          "text-muted-foreground flex flex-wrap items-center gap-2 lg:justify-center",
+        )}
       >
         {fillProof(brand.pdp.proofLine)}
         <PlaceholderTag kind="illustrative" label="Illustrative count" />
@@ -96,33 +110,27 @@ function ProofLine() {
   );
 }
 
-/** Icon chip colours, in turn. */
-const BULLET_TONES = [
-  "bg-secondary text-secondary-foreground",
-  "bg-accent text-accent-foreground",
-  "bg-highlight text-highlight-foreground",
-  "bg-primary text-primary-foreground",
-];
-
 function PriceAndBullets() {
   const { price, bundle } = useSelection();
   const bundleName = brand.bundleNames[bundle.id].title;
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="font-heading text-3xl font-extrabold tabular-nums">
+      <div className="border-foreground flex flex-wrap items-center gap-x-3 gap-y-2 border-y-2 py-3">
+        <span className="font-heading text-3xl font-bold tabular-nums">
           {money(price.total)}
         </span>
         <s className="text-muted-foreground text-lg tabular-nums">
           {money(price.compareAt)}
         </s>
-        <Badge
-          variant="secondary"
-          className="h-auto px-3 py-1 text-sm font-semibold"
+        <span
+          className={cn(
+            scoreLabel,
+            "bg-primary text-primary-foreground px-2 py-1",
+          )}
         >
           You save {money(price.saving)}
-        </Badge>
+        </span>
         <span className="text-muted-foreground w-full text-sm">
           {bundleName} · {money(price.perUnit)} per sleeve
           {price.giftValue > 0 &&
@@ -131,24 +139,21 @@ function PriceAndBullets() {
         <PlaceholderTag kind="illustrative" />
       </div>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
-        {brand.pdp.bullets.map((bullet, i) => {
+      <ul className="grid sm:grid-cols-2">
+        {brand.pdp.bullets.map((bullet) => {
           const Icon = featureIcons[bullet.icon];
           return (
             <li
               key={bullet.text}
-              className="flex items-start gap-3 text-[0.95rem] leading-snug"
+              className="flex items-start gap-3 border-b py-2.5 text-[0.95rem] leading-snug sm:odd:pe-4"
             >
               <span
                 aria-hidden="true"
-                className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-full",
-                  BULLET_TONES[i % BULLET_TONES.length],
-                )}
+                className="bg-secondary text-primary flex size-7 shrink-0 items-center justify-center"
               >
                 <Icon className="size-[18px]" />
               </span>
-              <span className="pt-1.5">{bullet.text}</span>
+              <span className="pt-0.5">{bullet.text}</span>
             </li>
           );
         })}

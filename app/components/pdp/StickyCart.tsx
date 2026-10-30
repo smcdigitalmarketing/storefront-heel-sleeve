@@ -2,6 +2,7 @@ import { StarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Img } from "~/components/brand/Img";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import { brand } from "~/content/brand";
 import { money } from "~/content/offers";
@@ -13,8 +14,17 @@ import { useSelection } from "./selection";
 
 /** Appears once the main button has scrolled out of view, mirroring the selection. */
 export function StickyCart() {
-  const { ctaRef, bundle, price, colours, canAdd, adding, addToCart } =
-    useSelection();
+  const {
+    ctaRef,
+    bundle,
+    price,
+    colours,
+    sizes,
+    missingSize,
+    canAdd,
+    adding,
+    addToCart,
+  } = useSelection();
   const { copy } = useOffer();
   const [visible, setVisible] = useState(false);
 
@@ -43,7 +53,7 @@ export function StickyCart() {
       aria-hidden={!visible}
       inert={!visible}
       className={cn(
-        "bg-background fixed inset-x-0 bottom-0 z-40 border-t-2 transition-transform duration-300 motion-reduce:transition-none",
+        "bg-secondary text-secondary-foreground border-foreground fixed inset-x-0 bottom-0 z-40 border-t-2 transition-transform duration-300 motion-reduce:transition-none",
         visible ? "translate-y-0" : "translate-y-full",
       )}
     >
@@ -55,9 +65,14 @@ export function StickyCart() {
           className="bg-card hidden size-12 shrink-0 object-contain sm:block"
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">
+          <p className={cn(scoreLabel, "truncate")}>
             {brand.productName} · {brand.bundleNames[bundle.id].title} ·{" "}
-            {colours.map((c) => brand.store.colourNames[c]).join(" + ")}
+            {colours
+              .map(
+                (c, i) =>
+                  `${brand.store.colourNames[c]}${sizes[i] ? ` ${sizes[i]}` : ""}`,
+              )
+              .join(" + ")}
           </p>
           <p className="text-sm tabular-nums">
             <span className="me-2 hidden items-center gap-1 align-middle md:inline-flex">
@@ -84,10 +99,16 @@ export function StickyCart() {
           disabled={!canAdd || adding}
           aria-busy={adding}
           data-testid="sticky-add-to-cart"
-          className="border-border font-heading h-11 shrink-0 rounded-full border-2 px-5 text-sm font-extrabold whitespace-nowrap"
+          className="font-heading hover:bg-secondary-foreground hover:text-secondary h-11 shrink-0 rounded-none px-5 text-sm font-extrabold whitespace-nowrap uppercase"
         >
-          <span className="sm:hidden">{brand.offers.standard.cta}</span>
-          <span className="hidden sm:inline">{copy.cta}</span>
+          {missingSize ? (
+            "Choose a size"
+          ) : (
+            <>
+              <span className="sm:hidden">{brand.offers.standard.cta}</span>
+              <span className="hidden sm:inline">{copy.cta}</span>
+            </>
+          )}
         </Button>
       </div>
     </div>

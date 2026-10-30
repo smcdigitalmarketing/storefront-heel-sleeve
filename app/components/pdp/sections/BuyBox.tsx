@@ -551,7 +551,7 @@ export function ShortReview() {
   const review = getReview(brand.pdp.underButtonReview);
 
   return (
-    <figure className="border-foreground bg-card mt-4 flex gap-3 border-2 p-4 text-sm">
+    <figure className="border-primary bg-card flex gap-3 border-l-4 p-4 text-sm">
       <div className="min-w-0 space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
           <Stars rating={review.rating} className="size-3.5" />
