@@ -1,3 +1,4 @@
+import { scoreLabel } from "~/components/brand/score-label";
 import { cn } from "~/lib/utils";
 
 /** A store page's sticker eyebrow, display title and intro. */
@@ -24,13 +25,13 @@ export function PageTitle({
       )}
     >
       {eyebrow ? (
-        <p className="bg-secondary font-heading text-secondary-foreground mb-3 inline-block -rotate-2 rounded-full px-3 py-1 text-sm font-bold">
+        <p className={cn(scoreLabel, "text-highlight mb-3")}>
           {eyebrow}
         </p>
       ) : null}
       <h1
         className={cn(
-          "font-heading max-w-4xl text-4xl leading-[0.92] font-extrabold tracking-[-0.035em] text-balance sm:text-6xl lg:text-7xl",
+          "font-heading max-w-4xl text-4xl leading-[0.92] font-extrabold tracking-[-0.01em] text-balance uppercase italic sm:text-6xl lg:text-7xl",
           centred && "mx-auto",
         )}
       >

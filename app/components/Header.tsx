@@ -2,6 +2,7 @@ import { SearchIcon, ShoppingBagIcon, UserIcon } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useRouteLoaderData } from "react-router";
 
+import { scoreLabel } from "~/components/brand/score-label";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -39,9 +40,7 @@ function displayCount(count: number) {
   return count > 99 ? "99+" : String(count);
 }
 
-// Flashpop's header is centred: three links, the wordmark, two links and the icons.
-const LEFT_NAV = NAV_ITEMS.slice(0, 3);
-const RIGHT_NAV = NAV_ITEMS.slice(3);
+// Rally's header runs left to right: the wordmark, the nav, then the icons.
 
 function HeaderNav({ items, label }: { items: NavItem[]; label: string }) {
   return (
@@ -53,7 +52,8 @@ function HeaderNav({ items, label }: { items: NavItem[]; label: string }) {
               asChild
               className={cn(
                 navigationMenuTriggerStyle(),
-                "h-11 bg-transparent font-medium whitespace-nowrap underline-offset-[6px] hover:underline aria-[current=page]:underline",
+                scoreLabel,
+                "decoration-primary h-11 rounded-none bg-transparent text-sm whitespace-nowrap decoration-2 underline-offset-[6px] hover:underline aria-[current=page]:underline",
               )}
             >
               <NavLink to={item.to}>{item.label}</NavLink>
@@ -69,7 +69,7 @@ export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
   const totalQuantity = useCart((state) => state.data.totalQuantity);
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
   const rootData = useRouteLoaderData<typeof rootLoader>("root");
-  // mock.shop's logo belongs to the stand-in catalog, not to Flashpop.
+  // mock.shop's logo belongs to the stand-in catalog, not to Rally.
   const standIn = isMockShopDomain(
     rootData?.shopIdentity.scriptShop.myshopifyDomain,
   );
@@ -78,42 +78,41 @@ export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
   const homeLabel = showLogo ? shopInfo.name : brand.name;
 
   return (
-    <header className="bg-background sticky top-0 z-40 border-b">
+    <header className="bg-background border-foreground sticky top-0 z-40 border-b-2">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-2 px-4">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-6">
           <div className="-ms-2 lg:hidden">
             <MobileNavTrigger />
           </div>
-          <HeaderNav items={LEFT_NAV} label="Main navigation" />
+
+          <Link
+            to="/"
+            aria-label={homeLabel}
+            title={homeLabel}
+            className="focus-visible:ring-ring/50 inline-flex max-w-48 min-w-0 shrink-0 items-center rounded-md outline-none focus-visible:ring-3"
+          >
+            {logo && showLogo ? (
+              <img
+                src={logo.url}
+                alt={logo.altText ?? shopInfo.name}
+                width={logo.width ?? undefined}
+                height={logo.height ?? undefined}
+                className="h-auto max-h-10 w-auto max-w-full object-contain"
+                // An SSR image can fail before hydration attaches onError, so also check on mount.
+                ref={(img) => {
+                  if (img?.complete && img.naturalWidth === 0)
+                    setFailedLogoUrl(logo.url);
+                }}
+                onError={() => setFailedLogoUrl(logo.url)}
+              />
+            ) : (
+              <Wordmark className="text-xl sm:text-2xl" />
+            )}
+          </Link>
+          <HeaderNav items={NAV_ITEMS} label="Main navigation" />
         </div>
 
-        <Link
-          to="/"
-          aria-label={homeLabel}
-          title={homeLabel}
-          className="focus-visible:ring-ring/50 inline-flex max-w-48 min-w-0 shrink-0 items-center rounded-md outline-none focus-visible:ring-3"
-        >
-          {logo && showLogo ? (
-            <img
-              src={logo.url}
-              alt={logo.altText ?? shopInfo.name}
-              width={logo.width ?? undefined}
-              height={logo.height ?? undefined}
-              className="h-auto max-h-10 w-auto max-w-full object-contain"
-              // An SSR image can fail before hydration attaches onError, so also check on mount.
-              ref={(img) => {
-                if (img?.complete && img.naturalWidth === 0)
-                  setFailedLogoUrl(logo.url);
-              }}
-              onError={() => setFailedLogoUrl(logo.url)}
-            />
-          ) : (
-            <Wordmark className="text-xl sm:text-2xl" />
-          )}
-        </Link>
-
-        <div className="flex flex-1 items-center justify-end gap-2">
-          <HeaderNav items={RIGHT_NAV} label="More navigation" />
+        <div className="flex items-center justify-end gap-2">
           <div className="flex shrink-0 items-center">
             <Button asChild variant="ghost" size="icon-lg">
               <Link

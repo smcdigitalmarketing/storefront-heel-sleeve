@@ -26,7 +26,7 @@ export function GuideArticle() {
       <p className="text-muted-foreground mt-6 text-sm">
         {guideArticle.kicker} · {guideArticle.readTime}
       </p>
-      <h1 className="font-heading mt-3 text-4xl font-extrabold tracking-[-0.03em] text-balance sm:text-6xl">
+      <h1 className="font-heading mt-3 text-4xl font-extrabold tracking-[-0.01em] text-balance uppercase italic sm:text-6xl">
         {guideArticle.headline}
       </h1>
       <p className="text-muted-foreground mt-4 text-xl">{guideArticle.dek}</p>
@@ -34,12 +34,12 @@ export function GuideArticle() {
         image={guideArticle.image}
         priority
         sizes="(min-width: 768px) 720px, 100vw"
-        className="mt-8 aspect-[4/3] w-full rounded-3xl object-cover"
+        className="border-foreground mt-8 aspect-[4/3] w-full border-2 object-cover"
       />
       <ol className="mt-10 space-y-8">
         {guideSteps.map((step, i) => (
           <li key={step.title} className="grid grid-cols-[3rem_1fr] gap-4">
-            <span className="bg-secondary font-heading text-secondary-foreground flex size-12 items-center justify-center rounded-full text-xl font-bold">
+            <span className="bg-secondary font-heading text-primary flex size-12 items-center justify-center text-xl font-bold">
               {i + 1}
             </span>
             <div className="space-y-1 pt-2">

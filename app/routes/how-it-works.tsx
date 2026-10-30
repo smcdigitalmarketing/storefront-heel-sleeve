@@ -2,17 +2,19 @@ import { Link } from "react-router";
 
 import { Img } from "~/components/brand/Img";
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { BrandLinkButton } from "~/components/store/BrandButton";
 import { PRODUCT_PATH, storePaths } from "~/components/store/nav";
 import { PageTitle } from "~/components/store/PageTitle";
-import { brand } from "~/content/brand";
 import { SizeGuideButton } from "~/components/store/SizeGuide";
+import { brand } from "~/content/brand";
 import { HEEL_NOTE, product } from "~/content/product";
 import { guideSteps } from "~/content/store-pages";
 import {
   formatPageTitle,
   getShopNameFromRootMatch,
 } from "~/lib/storefront-shop";
+import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/how-it-works";
 
@@ -28,7 +30,8 @@ export function meta({ matches }: Route.MetaArgs) {
   ];
 }
 
-const HEADING = "font-heading text-3xl font-extrabold sm:text-4xl";
+const HEADING =
+  "font-heading text-3xl font-extrabold uppercase italic sm:text-4xl";
 
 export default function HowItWorks() {
   return (
@@ -43,15 +46,15 @@ export default function HowItWorks() {
           {product.howItWorks.map((step, i) => (
             <li
               key={step.title}
-              className="bg-card text-card-foreground rounded-3xl border-2 p-3"
+              className="bg-card text-card-foreground border-foreground border-2 p-3"
             >
               <Img
                 image={step.image}
                 sizes="(min-width: 1024px) 25vw, 50vw"
-                className="aspect-square w-full rounded-lg object-cover"
+                className="aspect-square w-full object-cover"
               />
               <div className="space-y-1 pt-4">
-                <p className="text-muted-foreground text-sm">Step {i + 1}</p>
+                <p className={cn(scoreLabel, "text-highlight")}>Step {i + 1}</p>
                 <h2 className="font-heading text-2xl font-bold">
                   {step.title}
                 </h2>
@@ -68,7 +71,7 @@ export default function HowItWorks() {
           <Img
             image="step-strap"
             sizes="(min-width: 768px) 50vw, 100vw"
-            className="aspect-square w-full rounded-3xl object-cover"
+            className="border-foreground aspect-square w-full border-2 object-cover"
           />
           <div className="space-y-4">
             <h2 id="strap-heading" className={HEADING}>
@@ -98,7 +101,7 @@ export default function HowItWorks() {
             {guideSteps.map((step, i) => (
               <li
                 key={step.title}
-                className="bg-secondary text-secondary-foreground space-y-2 rounded-3xl p-5"
+                className="bg-secondary text-secondary-foreground space-y-2 p-5"
               >
                 <span className="font-heading text-primary text-4xl font-bold">
                   {i + 1}

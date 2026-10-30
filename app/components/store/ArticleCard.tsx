@@ -47,9 +47,9 @@ export function ArticleCard({
   return (
     <Link
       to={article.to}
-      className="group bg-card text-card-foreground focus-visible:ring-ring/50 block rounded-3xl border-2 p-2 outline-none focus-visible:ring-3"
+      className="group bg-card text-card-foreground focus-visible:ring-ring/50 border-foreground block border-2 p-2 outline-none focus-visible:ring-3"
     >
-      <div className="overflow-hidden rounded-[1.1rem]">
+      <div className="overflow-hidden">
         <Img
           image={article.image}
           sizes="(min-width: 1024px) 50vw, 100vw"
@@ -65,7 +65,7 @@ export function ArticleCard({
         </p>
         <h2
           className={cn(
-            "font-heading text-2xl leading-tight font-extrabold group-hover:underline",
+            "font-heading text-2xl leading-tight font-extrabold uppercase italic group-hover:underline",
             large && "sm:text-3xl",
           )}
         >

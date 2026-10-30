@@ -49,7 +49,7 @@ export default function Faq() {
                 <Button
                   asChild
                   variant="ghost"
-                  className="h-11 justify-start rounded-full px-3 font-normal"
+                  className="h-11 justify-start rounded-none px-3 font-normal"
                 >
                   <a href={`#${category.id}`}>{category.title}</a>
                 </Button>
@@ -67,7 +67,7 @@ export default function Faq() {
             >
               <h2
                 id={`${category.id}-heading`}
-                className="font-heading mb-3 text-2xl font-extrabold"
+                className="font-heading mb-3 text-2xl font-extrabold uppercase italic"
               >
                 {category.title}
               </h2>

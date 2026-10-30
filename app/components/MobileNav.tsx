@@ -41,8 +41,8 @@ function NavList({
               size="lg"
               className={
                 size === "lg"
-                  ? "font-heading h-12 w-full justify-start text-xl font-bold"
-                  : "h-11 w-full justify-start text-base font-normal"
+                  ? "font-heading h-12 w-full justify-start rounded-none text-xl font-bold uppercase italic"
+                  : "h-11 w-full justify-start rounded-none text-base font-normal"
               }
             >
               <Link to={link.to} onClick={() => closeMobileNavDrawer()}>

@@ -46,7 +46,7 @@ const TOPICS = [
   "Something else",
 ];
 
-const FIELD = "bg-card text-card-foreground rounded-xl";
+const FIELD = "bg-card text-card-foreground rounded-none border-foreground/40";
 
 export default function Contact() {
   // No support inbox yet: the form only works once hydrated, so it never falls

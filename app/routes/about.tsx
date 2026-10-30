@@ -23,11 +23,11 @@ export function meta({ matches }: Route.MetaArgs) {
   ];
 }
 
-// The three value cards: sunflower, bubblegum, tomato.
+// The three value cards: Night, lime, Night.
 const VALUE_TONES = [
   "bg-secondary text-secondary-foreground",
-  "bg-accent text-accent-foreground",
-  "bg-highlight text-highlight-foreground",
+  "bg-primary text-primary-foreground",
+  "bg-secondary text-secondary-foreground",
 ];
 
 export default function About() {
@@ -40,7 +40,7 @@ export default function About() {
         intro={about.intro}
       />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="overflow-hidden rounded-3xl border-2">
+        <div className="border-foreground overflow-hidden border-2">
           <Img
             image={about.image}
             priority
@@ -63,14 +63,14 @@ export default function About() {
                 image={section.image}
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className={cn(
-                  "aspect-[4/3] w-full rounded-3xl object-cover",
+                  "border-foreground aspect-[4/3] w-full border-2 object-cover",
                   i % 2 && "md:order-2",
                 )}
               />
               <div className="space-y-4">
                 <h2
                   id={`about-section-${i}`}
-                  className="font-heading text-3xl font-extrabold sm:text-4xl"
+                  className="font-heading text-3xl font-extrabold uppercase italic sm:text-4xl"
                 >
                   {section.title}
                 </h2>
@@ -85,7 +85,7 @@ export default function About() {
         <section aria-labelledby="values-heading" className="mt-24">
           <h2
             id="values-heading"
-            className="font-heading mb-8 text-3xl font-extrabold"
+            className="font-heading mb-8 text-3xl font-extrabold uppercase italic"
           >
             What we stand for
           </h2>
@@ -94,11 +94,11 @@ export default function About() {
               <li
                 key={value.title}
                 className={cn(
-                  "space-y-2 rounded-3xl border-2 p-6",
+                  "border-foreground space-y-2 border-2 p-6",
                   VALUE_TONES[i % VALUE_TONES.length],
                 )}
               >
-                <h3 className="font-heading text-2xl font-bold">
+                <h3 className="font-heading text-2xl font-bold uppercase">
                   {value.title}
                 </h3>
                 <p>{value.body}</p>
