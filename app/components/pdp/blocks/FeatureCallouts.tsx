@@ -3,6 +3,7 @@ import { useState, type CSSProperties } from "react";
 import { Img } from "~/components/brand/Img";
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
 import { SectionHeading } from "~/components/brand/SectionHeading";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import { brand } from "~/content/brand";
 import { product } from "~/content/product";
@@ -19,10 +20,11 @@ export function FeatureCallouts() {
 
   const pin = (i: number) =>
     cn(
-      "flex size-7 items-center justify-center rounded-full border-2 text-xs font-bold tabular-nums transition motion-reduce:transition-none sm:size-8 sm:text-sm",
+      scoreLabel,
+      "flex size-7 items-center justify-center text-xs transition motion-reduce:transition-none sm:size-8 sm:text-sm",
       active === i
-        ? "scale-125 bg-highlight text-highlight-foreground"
-        : "bg-secondary text-secondary-foreground",
+        ? "scale-125 bg-primary text-primary-foreground"
+        : "bg-secondary text-primary",
     );
 
   return (
@@ -34,7 +36,7 @@ export function FeatureCallouts() {
         {brand.pdp.calloutsHeadline}
       </SectionHeading>
       <div className="mt-10 grid items-center gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-14">
-        <div className="relative overflow-hidden rounded-3xl border-2">
+        <div className="relative overflow-hidden border-2 border-foreground">
           <Img
             image="product-studio"
             sizes="(min-width: 1024px) 55vw, 100vw"
@@ -63,7 +65,7 @@ export function FeatureCallouts() {
                 onFocus={() => setActive(i)}
                 onBlur={() => setActive(null)}
                 onClick={() => setActive(active === i ? null : i)}
-                className="size-11 rounded-full hover:bg-transparent aria-expanded:bg-transparent"
+                className="size-11 rounded-none hover:bg-transparent aria-expanded:bg-transparent"
               >
                 <span aria-hidden className={pin(i)}>
                   {i + 1}
@@ -72,7 +74,7 @@ export function FeatureCallouts() {
             </span>
           ))}
         </div>
-        <ol className="grid gap-1 sm:grid-cols-2 lg:grid-cols-1">
+        <ol className="grid gap-x-6 border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-1">
           {callouts.map((callout, i) => (
             <li
               key={callout.title}
@@ -80,15 +82,15 @@ export function FeatureCallouts() {
               onMouseEnter={() => setActive(i)}
               onMouseLeave={() => setActive(null)}
               className={cn(
-                "flex gap-4 rounded-lg p-3 transition motion-reduce:transition-none",
-                active === i && "bg-foreground/5",
+                "flex gap-4 border-b p-3 transition motion-reduce:transition-none",
+                active === i && "bg-muted",
               )}
             >
               <span aria-hidden className={cn(pin(i), "shrink-0")}>
                 {i + 1}
               </span>
               <span>
-                <span className="block font-heading text-lg font-semibold">
+                <span className={cn(scoreLabel, "block text-sm")}>
                   {callout.title}
                 </span>
                 <span className="text-sm text-muted-foreground">

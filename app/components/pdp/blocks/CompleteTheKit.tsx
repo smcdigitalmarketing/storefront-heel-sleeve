@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { Img } from "~/components/brand/Img";
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
 import { SectionHeading } from "~/components/brand/SectionHeading";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import { brand } from "~/content/brand";
 import { MAIN_PRODUCT, getProduct, type ProductId } from "~/content/catalog";
@@ -11,6 +12,7 @@ import { money } from "~/content/offers";
 import { proof } from "~/content/proof";
 import { addLinesToCart, canUpdateCart } from "~/lib/bundle-cart";
 import { useCart } from "~/lib/cart";
+import { cn } from "~/lib/utils";
 
 /** Shopify variant ids for the accessories, by catalog id. */
 export type KitVariantIds = Partial<Record<ProductId, string>>;
@@ -47,16 +49,16 @@ export function CompleteTheKit({
           return (
             <li
               key={item.id}
-              className="flex items-center gap-4 rounded-3xl border-2 bg-card p-3 text-card-foreground"
+              className="flex items-center gap-4 border-2 border-foreground bg-card p-3 text-card-foreground"
             >
               <Img
                 image={item.images[0]}
                 sizes="96px"
                 alt=""
-                className="size-20 shrink-0 rounded-lg object-cover sm:size-24"
+                className="size-20 shrink-0 object-cover sm:size-24"
               />
               <div className="min-w-0 flex-1 space-y-1">
-                <p className="leading-tight font-semibold">{name}</p>
+                <p className={cn(scoreLabel, "leading-tight")}>{name}</p>
                 <p className="line-clamp-2 text-sm text-muted-foreground">
                   {blurb}
                 </p>
@@ -78,7 +80,8 @@ export function CompleteTheKit({
   );
 }
 
-const ADD_CLASS = "h-11 rounded-full border-2 border-border px-4 font-semibold";
+/** Rally's quick add: a square Night chip with a lime scoreboard label. */
+const ADD_CLASS = cn(scoreLabel, "h-11 rounded-none px-4 text-primary");
 
 /**
  * The quick add. With a variant id it adds one to the cart through Shopify's
@@ -101,6 +104,7 @@ function KitAdd({ name, variantId }: { name: string; variantId?: string }) {
     return (
       <>
         <Button
+          variant="secondary"
           disabled
           aria-label={`Add ${name} to cart`}
           aria-describedby={tagId}
@@ -132,6 +136,7 @@ function KitAdd({ name, variantId }: { name: string; variantId?: string }) {
   return (
     <>
       <Button
+        variant="secondary"
         onClick={add}
         disabled={adding}
         aria-label={`Add ${name} to cart`}

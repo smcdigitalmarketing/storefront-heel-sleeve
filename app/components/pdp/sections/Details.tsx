@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Img } from "~/components/brand/Img";
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
 import { SectionHeading } from "~/components/brand/SectionHeading";
+import { scoreLabel } from "~/components/brand/score-label";
 import {
   Accordion,
   AccordionContent,
@@ -34,17 +35,22 @@ export function Details() {
       value: "love",
       title: "Why you'll love it",
       body: (
-        <ul className="space-y-3">
-          {brand.pdp.whyLove.map((item) => (
-            <li key={item.title} className="flex gap-3">
+        <ul>
+          {brand.pdp.whyLove.map((item, i) => (
+            <li
+              key={item.title}
+              className="flex gap-3 border-t py-2.5 first:border-t-0"
+            >
               <span
                 aria-hidden
-                className="shrink-0 font-heading font-bold text-highlight"
+                className={cn(scoreLabel, "shrink-0 pt-0.5 text-highlight")}
               >
-                ✦
+                {String(i + 1).padStart(2, "0")}
               </span>
               <span>
-                <span className="block font-semibold">{item.title}</span>
+                <span className="block font-semibold uppercase">
+                  {item.title}
+                </span>
                 <span className="text-muted-foreground">{item.body}</span>
               </span>
             </li>
@@ -200,14 +206,23 @@ export function Details() {
           </SectionHeading>
           <ProductDescription facts={glance} />
         </div>
-        <Accordion type="multiple" defaultValue={["love"]}>
+        <Accordion
+          type="multiple"
+          defaultValue={["love"]}
+          className="border-t-2 border-foreground"
+        >
           {items.map((item) => (
             <AccordionItem
               key={item.value}
               value={item.value}
-              className="mb-3 rounded-lg border-2 bg-card px-4 text-card-foreground not-last:border-b-2"
+              className="border-b border-foreground"
             >
-              <AccordionTrigger className="py-4 font-heading text-lg font-extrabold hover:no-underline **:data-[slot=accordion-trigger-icon]:text-card-foreground">
+              <AccordionTrigger
+                className={cn(
+                  scoreLabel,
+                  "rounded-none py-4 text-sm text-foreground hover:no-underline **:data-[slot=accordion-trigger-icon]:text-foreground",
+                )}
+              >
                 {item.title}
               </AccordionTrigger>
               {/* Spacing comes from each body's own stack, not the content's paragraph margins. */}
@@ -230,7 +245,7 @@ function StatusTag({ status }: { status: ContentStatus }) {
   );
 }
 
-/** Sample photos off the reference camera, scrolling past like a contact strip. */
+/** Lifestyle photos scrolling past on a Night band, edge to edge. */
 function LifestyleStrip() {
   const [paused, setPaused] = useState(false);
   const frames = [...stripImages, ...stripImages];
@@ -238,19 +253,20 @@ function LifestyleStrip() {
   return (
     <div className="mt-14 sm:mt-20">
       <div className="mx-auto mb-5 flex max-w-7xl flex-wrap items-center gap-3 px-4 sm:px-6">
-        <h3 className="font-heading text-xl font-extrabold">
-          {brand.pdp.stripHeadline}
-        </h3>
+        <h3 className={cn(scoreLabel, "text-sm")}>{brand.pdp.stripHeadline}</h3>
         <PlaceholderTag
           kind="competitor"
-          label="Sample photos from the reference camera (competitor)"
+          label="Competitor photos, used as placeholders"
         />
         <Button
           variant="outline"
           size="sm"
           onClick={() => setPaused((p) => !p)}
           aria-pressed={paused}
-          className="ms-auto h-11 rounded-full border-foreground/30 px-4 text-xs motion-reduce:hidden"
+          className={cn(
+            scoreLabel,
+            "ms-auto h-11 rounded-none border-foreground px-4 text-xs motion-reduce:hidden",
+          )}
         >
           {paused ? (
             <PlayIcon aria-hidden className="size-3.5" />
@@ -261,7 +277,7 @@ function LifestyleStrip() {
         </Button>
       </div>
       <div
-        className="overflow-hidden motion-reduce:overflow-x-auto"
+        className="overflow-hidden border-y-2 border-foreground bg-secondary py-3 motion-reduce:overflow-x-auto"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -275,16 +291,13 @@ function LifestyleStrip() {
             <li
               key={`${image.id}-${i}`}
               aria-hidden={i >= stripImages.length}
-              className={cn(
-                "my-4 shrink-0 bg-card p-2 pb-7 shadow-xl",
-                i % 2 ? "rotate-2" : "-rotate-2",
-              )}
+              className="shrink-0"
             >
               <Img
                 image={image.id as ImageId}
                 sizes="320px"
                 alt={i >= stripImages.length ? "" : image.alt}
-                className="h-40 w-auto object-cover sm:h-56"
+                className="h-48 w-auto object-cover sm:h-64"
               />
             </li>
           ))}

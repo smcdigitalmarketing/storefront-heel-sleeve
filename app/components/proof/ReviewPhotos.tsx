@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { Img } from "~/components/brand/Img";
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -32,14 +33,14 @@ export function ReviewPhotos({ className }: { className?: string }) {
   return (
     <div className={className}>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <h3 className="font-heading text-lg font-extrabold">Customer photos</h3>
+        <h3 className={cn(scoreLabel, "text-sm")}>Customer photos</h3>
         <PlaceholderTag
           kind="competitor"
           label="Photos from competitor reviews"
         />
       </div>
       <ul className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-9">
-        {photoReviews.map((item, i) => (
+        {photoReviews.map((item) => (
           <li key={item.id}>
             <Button
               variant="outline"
@@ -48,10 +49,7 @@ export function ReviewPhotos({ className }: { className?: string }) {
                 setOpen(true);
               }}
               aria-label={`Photo from ${item.name}'s review: ${item.title}`}
-              className={cn(
-                "group block aspect-square h-auto w-full overflow-hidden rounded-lg border-2 border-border bg-current/10 p-0 shadow-none hover:bg-current/10 focus-visible:ring-current/60",
-                i % 2 ? "rotate-1" : "-rotate-1",
-              )}
+              className="group block aspect-square h-auto w-full overflow-hidden rounded-none border-2 border-current/20 bg-current/10 p-0 shadow-none hover:border-primary hover:bg-current/10 hover:text-current focus-visible:border-primary focus-visible:ring-primary/50"
             >
               <Img
                 image={item.photo!}
@@ -68,14 +66,14 @@ export function ReviewPhotos({ className }: { className?: string }) {
         <DialogContent
           aria-describedby={undefined}
           showCloseButton={false}
-          className="max-h-[90dvh] gap-0 overflow-y-auto rounded-3xl border-2 bg-background p-0 text-foreground ring-0 sm:max-w-3xl"
+          className="max-h-[90dvh] gap-0 overflow-y-auto rounded-none border-2 border-foreground bg-background p-0 text-foreground ring-0 sm:max-w-3xl"
         >
           {/* First in the DOM, so it takes the initial focus. */}
           <DialogClose asChild>
             <Button
               variant="outline"
               size="icon"
-              className="absolute top-3 right-3 z-10 size-11 rounded-full border-2"
+              className="absolute top-3 right-3 z-10 size-11 rounded-none border-2 border-foreground"
             >
               <XIcon aria-hidden />
               <span className="sr-only">Close</span>

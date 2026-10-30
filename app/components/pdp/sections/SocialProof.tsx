@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 
 import { Img } from "~/components/brand/Img";
 import { SectionHeading } from "~/components/brand/SectionHeading";
+import { scoreLabel } from "~/components/brand/score-label";
 import { ExpertQuote, PressQuotes } from "~/components/proof/Endorsements";
 import { RatingSummary, Stars } from "~/components/proof/Rating";
 import {
@@ -13,7 +14,6 @@ import {
 } from "~/components/proof/ReviewParts";
 import { ReviewPhotos } from "~/components/proof/ReviewPhotos";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import {
   Select,
@@ -42,7 +42,8 @@ const ALL_TOPICS = "all";
  * SOP section 5: the rating summary, customer photos, then a wall of reviews
  * shown up front (never a carousel) that filters by stars and theme, sorts,
  * and grows 12 at a time. Then the expert and press slots. Every number and
- * review is a labelled placeholder until real reviews exist.
+ * review is a labelled placeholder until real reviews exist. In Rally's look
+ * the whole section sits on Night and the reviews are a numbered match log.
  */
 export function SocialProof() {
   const [stars, setStars] = useState<number | null>(null);
@@ -74,7 +75,7 @@ export function SocialProof() {
       id="reviews"
       data-sop-section="social-proof"
       aria-labelledby="reviews-heading"
-      className="scroll-mt-4 bg-primary py-16 text-primary-foreground sm:py-24"
+      className="scroll-mt-4 bg-secondary py-16 text-secondary-foreground sm:py-24"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
@@ -89,6 +90,7 @@ export function SocialProof() {
           <RatingSummary
             selected={stars}
             onSelect={(s) => reset(() => setStars(s))}
+            onDark
           />
           <ReviewPhotos />
         </div>
@@ -102,7 +104,10 @@ export function SocialProof() {
 
         <p
           aria-live="polite"
-          className="mt-6 flex min-h-11 flex-wrap items-center gap-x-3 text-sm"
+          className={cn(
+            scoreLabel,
+            "mt-6 flex min-h-11 flex-wrap items-center gap-x-3",
+          )}
         >
           Showing {visible.length} of {filtered.length} reviews
           {stars !== null && ` · ${stars} star${stars > 1 ? "s" : ""}`}
@@ -116,7 +121,10 @@ export function SocialProof() {
                   setTheme(null);
                 })
               }
-              className="h-11 gap-1 px-1 font-semibold text-primary-foreground underline focus-visible:ring-primary-foreground/60"
+              className={cn(
+                scoreLabel,
+                "h-11 gap-1 px-1 text-secondary-foreground hover:decoration-secondary-foreground focus-visible:ring-primary/60",
+              )}
             >
               <XIcon aria-hidden className="size-3.5" />
               Clear filters
@@ -130,16 +138,19 @@ export function SocialProof() {
               No reviews match these filters yet.
             </p>
           ) : (
-            <StickyNotes reviews={visible} />
+            <LogRows reviews={visible} />
           )}
         </div>
 
         {filtered.length > shown ? (
           <div className="mt-10 flex justify-center">
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => setShown((n) => n + PAGE)}
-              className="h-12 gap-2 rounded-full border-2 border-border px-6 font-heading font-semibold shadow-[3px_3px_0_0] shadow-foreground hover:shadow-none focus-visible:ring-primary-foreground/60"
+              className={cn(
+                scoreLabel,
+                "h-12 gap-2 rounded-none border-2 border-primary bg-transparent px-6 text-primary shadow-none hover:bg-primary hover:text-primary-foreground focus-visible:border-primary focus-visible:ring-primary/60",
+              )}
             >
               Show more reviews
               <ChevronDownIcon aria-hidden className="size-4" />
@@ -171,11 +182,14 @@ function Toolbar({
     ...t,
     count: productReviews.filter((r) => r.tags.includes(t.id)).length,
   }));
-  const chip =
-    "h-11 gap-1.5 rounded-full border-2 border-primary-foreground/40 px-3.5 text-sm font-medium hover:border-primary-foreground hover:bg-transparent hover:text-primary-foreground data-[state=on]:border-border data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground focus-visible:ring-primary-foreground/60";
+  // Rally's scoreboard chips: square, a faint Chalk rule, lime when on.
+  const chip = cn(
+    scoreLabel,
+    "h-11 gap-1.5 rounded-none border border-secondary-foreground/40 px-3.5 hover:border-secondary-foreground hover:bg-transparent hover:text-secondary-foreground data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground focus-visible:ring-primary/60",
+  );
 
   return (
-    <div className="mt-10 flex flex-col gap-4 border-t border-primary-foreground/15 pt-6 lg:flex-row lg:items-center lg:justify-between">
+    <div className="mt-10 flex flex-col gap-4 border-t border-secondary-foreground/15 pt-6 lg:flex-row lg:items-center lg:justify-between">
       <ToggleGroup
         type="single"
         aria-label="Filter reviews by topic"
@@ -197,13 +211,16 @@ function Toolbar({
         ))}
       </ToggleGroup>
       <div className="flex shrink-0 items-center gap-2">
-        <Label htmlFor="review-sort" className="font-normal">
+        <Label htmlFor="review-sort" className={scoreLabel}>
           Sort by
         </Label>
         <Select value={sort} onValueChange={(v) => onSort(v as ReviewSort)}>
           <SelectTrigger
             id="review-sort"
-            className="rounded-full border-2 border-primary-foreground px-3 font-semibold shadow-none focus-visible:border-primary-foreground focus-visible:ring-primary-foreground/60 data-[size=default]:h-11 [&>svg]:text-primary-foreground"
+            className={cn(
+              scoreLabel,
+              "rounded-none border border-secondary-foreground px-3 shadow-none focus-visible:border-primary focus-visible:ring-primary/60 data-[size=default]:h-11 [&>svg]:text-secondary-foreground",
+            )}
           >
             <SelectValue />
           </SelectTrigger>
@@ -220,57 +237,47 @@ function Toolbar({
   );
 }
 
-// Flashpop's sticky notes: paper colours from the palette, each at a tilt.
-const NOTE_COLOURS = [
-  "bg-secondary text-secondary-foreground",
-  "bg-accent text-accent-foreground",
-  "bg-card text-card-foreground",
-  // The mock's fifth note is mint (#B9F3D2), which has no theme token.
-  "bg-muted text-foreground",
-  "bg-highlight text-highlight-foreground",
-];
-const NOTE_TILTS = [
-  "-rotate-2",
-  "rotate-1",
-  "rotate-2",
-  "-rotate-1",
-  "rotate-0",
-];
-
-function StickyNotes({ reviews }: { reviews: Review[] }) {
+// Rally's match log: numbered rows under a lime rule, on the Night section.
+function LogRows({ reviews }: { reviews: Review[] }) {
   return (
-    <ul className="columns-1 gap-5 sm:columns-2 lg:columns-3">
+    <ol className="border-t-2 border-primary">
       {reviews.map((review, i) => (
         <li
           key={review.id}
           data-review-card
-          className="mb-5 break-inside-avoid"
+          className="grid grid-cols-[2.5rem_1fr] gap-x-4 gap-y-2 border-b border-secondary-foreground/15 py-5 sm:grid-cols-[3rem_6rem_1fr_13rem] sm:items-start"
         >
-          <Card
-            className={cn(
-              "gap-0 overflow-visible rounded-[4px] p-5 text-base shadow-[0_12px_24px_-12px] ring-0 shadow-foreground/45 hover:rotate-0 motion-safe:transition",
-              NOTE_COLOURS[i % NOTE_COLOURS.length],
-              NOTE_TILTS[i % NOTE_TILTS.length],
-            )}
-          >
-            {review.photo ? (
-              <div className="mb-4 -rotate-1 bg-card p-2 pb-7 shadow-xl">
-                <Img
-                  image={review.photo}
-                  sizes="(min-width: 1024px) 30vw, 90vw"
-                  className="aspect-[4/3] w-full object-cover"
-                />
-              </div>
-            ) : null}
-            <Stars rating={review.rating} className="size-4" />
-            <ReviewTitle review={review} className="mt-3" />
-            <p className="mt-2 text-[0.95rem] leading-snug">“{review.body}”</p>
-            <ReviewByline review={review} className="mt-4" />
+          <span className={cn(scoreLabel, "pt-1 text-accent")}>
+            #{String(i + 1).padStart(2, "0")}
+          </span>
+          {review.photo ? (
+            <Img
+              image={review.photo}
+              sizes="96px"
+              className="hidden aspect-square w-full object-cover sm:block"
+            />
+          ) : (
+            <span aria-hidden className="hidden sm:block" />
+          )}
+          <div className="col-start-2 min-w-0 sm:col-start-auto">
+            <ReviewTitle review={review} />
+            <blockquote className="mt-1.5 text-base leading-snug opacity-90 sm:text-lg">
+              {review.body}
+            </blockquote>
             <ReviewReply review={review} />
-            <ReviewFooter review={review} />
-          </Card>
+          </div>
+          <div className="col-start-2 flex flex-col gap-2 text-sm sm:col-start-auto sm:items-end sm:text-end">
+            <span className="text-primary">
+              <Stars rating={review.rating} className="size-3.5" />
+            </span>
+            <ReviewByline review={review} />
+            <ReviewFooter
+              review={review}
+              className="mt-0 sm:[&>div]:justify-end"
+            />
+          </div>
         </li>
       ))}
-    </ul>
+    </ol>
   );
 }

@@ -1,8 +1,10 @@
 import { ShieldCheckIcon, TruckIcon } from "lucide-react";
 
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { money } from "~/content/offers";
 import { proof } from "~/content/proof";
+import { cn } from "~/lib/utils";
 
 import { useSelection } from "../selection";
 
@@ -14,7 +16,10 @@ export function CtaNote() {
   return (
     <p
       data-proof="cta-note"
-      className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-sm"
+      className={cn(
+        scoreLabel,
+        "mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-xs",
+      )}
     >
       <span className="inline-flex items-center gap-1.5">
         <TruckIcon aria-hidden className="size-4" />

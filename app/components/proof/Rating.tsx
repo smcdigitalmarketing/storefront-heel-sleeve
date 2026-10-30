@@ -2,6 +2,7 @@ import { StarIcon } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
 import { proof } from "~/content/proof";
@@ -95,7 +96,8 @@ export function RatingBadge({
     <div
       data-proof="rating"
       className={cn(
-        "flex flex-wrap items-center gap-x-2 gap-y-1 text-sm",
+        scoreLabel,
+        "flex flex-wrap items-center gap-x-2 gap-y-1",
         className,
       )}
     >
@@ -105,7 +107,7 @@ export function RatingBadge({
       {href ? (
         <a
           href={href}
-          className="underline-offset-4 hover:underline"
+          className="decoration-primary decoration-2 underline-offset-4 hover:underline"
           aria-label={`Rated ${rating.average.toFixed(1)} out of 5 from ${count} reviews. Read the reviews`}
         >
           {label}
@@ -119,19 +121,23 @@ export function RatingBadge({
 }
 
 /**
- * Big average, stars, count, the 5→1 bars and % who recommend. With
- * `onSelect`, each bar is a toggle that filters the wall by stars.
+ * Big average, stars, count, the 5→1 bars and % who recommend, in a square
+ * 2px frame. With `onSelect`, each bar is a toggle that filters the wall by
+ * stars. `onDark` is for Night bands: a faint Chalk rule and lime stars and
+ * bars instead of the Night rule and dark lime.
  */
 export function RatingSummary({
   rating = proof.rating,
   selected,
   onSelect,
   className,
+  onDark,
 }: {
   rating?: RatingData;
   selected?: number | null;
   onSelect?: (stars: number | null) => void;
   className?: string;
+  onDark?: boolean;
 }) {
   const max = Math.max(...rating.distribution);
 
@@ -139,19 +145,20 @@ export function RatingSummary({
     <div
       data-proof="rating"
       className={cn(
-        "grid gap-6 rounded-3xl border-2 bg-card p-5 text-card-foreground shadow-[6px_6px_0_0] shadow-foreground sm:grid-cols-[auto_minmax(12rem,1fr)] sm:items-center sm:gap-10 sm:p-7",
+        "grid gap-6 rounded-none border-2 p-5 sm:grid-cols-[auto_minmax(12rem,1fr)] sm:items-center sm:gap-10 sm:p-6",
+        onDark ? "border-secondary-foreground/20" : "border-foreground",
         className,
       )}
     >
       <div className="space-y-2">
-        <p className="font-heading text-7xl leading-none font-extrabold tracking-[-0.04em] tabular-nums">
+        <p className="font-heading text-7xl leading-none font-extrabold tracking-[-0.02em] italic tabular-nums">
           {rating.average.toFixed(1)}
           <span className="sr-only"> out of 5</span>
         </p>
-        <span className="text-highlight">
+        <span className={onDark ? "text-primary" : "text-highlight"}>
           <RatingStars value={rating.average} className="size-5" />
         </span>
-        <p className="text-sm">
+        <p className={scoreLabel}>
           Based on {rating.count.toLocaleString("en-US")} reviews
         </p>
         <p className="text-sm font-semibold">
@@ -160,20 +167,25 @@ export function RatingSummary({
         <PlaceholderTag kind="illustrative" label="Illustrative rating" />
       </div>
 
-      <ol className="space-y-0.5" aria-label="Reviews by star rating">
+      <ol className="space-y-1" aria-label="Reviews by star rating">
         {rating.distribution.map((n, i) => {
           const stars = 5 - i;
           const active = selected === stars;
           const count = n.toLocaleString("en-US");
           const bar = (
             <>
-              <span className="w-14 shrink-0 text-start text-sm tabular-nums">
+              <span className={cn(scoreLabel, "w-14 shrink-0 text-start")}>
                 {stars} star{stars > 1 ? "s" : ""}
               </span>
               <Progress
                 aria-hidden
                 value={(n / max) * 100}
-                className="h-3 flex-1 bg-foreground/10 *:data-[slot=progress-indicator]:rounded-full *:data-[slot=progress-indicator]:bg-highlight"
+                className={cn(
+                  "h-2.5 flex-1 rounded-none bg-current/15",
+                  onDark
+                    ? "*:data-[slot=progress-indicator]:bg-primary"
+                    : "*:data-[slot=progress-indicator]:bg-highlight",
+                )}
               />
               <span className="w-12 shrink-0 text-end text-sm tabular-nums opacity-75">
                 {count}
@@ -189,8 +201,8 @@ export function RatingSummary({
                   aria-label={`${stars} star reviews: ${count}. ${active ? "Show all reviews" : `Show only ${stars} star reviews`}`}
                   onClick={() => onSelect(active ? null : stars)}
                   className={cn(
-                    "h-11 w-full justify-start gap-3 rounded-full px-1.5 font-normal hover:bg-foreground/8 hover:text-card-foreground",
-                    active && "bg-foreground/10 font-semibold",
+                    "h-11 w-full justify-start gap-3 rounded-none px-1.5 font-normal hover:bg-current/10 hover:text-current focus-visible:ring-current/50",
+                    active && "bg-current/10 font-semibold",
                   )}
                 >
                   {bar}

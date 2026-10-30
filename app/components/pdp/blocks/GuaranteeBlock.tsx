@@ -1,8 +1,10 @@
-import { PackageCheckIcon } from "lucide-react";
+import { PackageCheckIcon, ShieldCheckIcon } from "lucide-react";
 
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { brand } from "~/content/brand";
 import { proof } from "~/content/proof";
+import { cn } from "~/lib/utils";
 
 /** SOP closing: spell out the guarantee and how to claim it (proposed terms). */
 export function GuaranteeBlock() {
@@ -12,18 +14,14 @@ export function GuaranteeBlock() {
     <div
       data-block="guarantee-steps"
       data-proof="guarantee"
-      className="mx-auto mt-10 max-w-5xl rounded-3xl border-2 bg-secondary p-6 text-secondary-foreground sm:p-10"
+      className="mx-auto mt-10 max-w-5xl border-2 border-foreground bg-card p-6 text-card-foreground sm:p-10"
     >
       <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
-        {/* Flashpop's sticker burst. */}
-        <span className="flex size-24 items-center justify-center bg-highlight font-extrabold text-highlight-foreground [clip-path:polygon(50%_0%,61%_15%,79%_8%,80%_27%,98%_31%,88%_48%,100%_63%,82%_70%,83%_90%,64%_85%,50%_100%,36%_85%,17%_90%,18%_70%,0%_63%,12%_48%,2%_31%,20%_27%,21%_8%,39%_15%)]">
-          <span className="text-center font-heading text-xl leading-none">
-            {guarantee.days}
-            <span className="block text-[10px]">days</span>
-          </span>
+        <span className="flex size-20 items-center justify-center bg-secondary text-primary">
+          <ShieldCheckIcon aria-hidden className="size-9" strokeWidth={1.25} />
         </span>
         <div className="space-y-2">
-          <h3 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-extrabold sm:text-3xl">
+          <h3 className="flex flex-wrap items-center gap-2 font-heading text-2xl font-extrabold uppercase italic sm:text-3xl">
             {brand.pdp.guaranteeHeadline}
             <PlaceholderTag kind="tbc" label="Proposed terms" />
           </h3>
@@ -35,12 +33,10 @@ export function GuaranteeBlock() {
         {guarantee.steps.map((step, i) => (
           <li
             key={step.title}
-            className="space-y-1.5 rounded-lg bg-card p-4 text-card-foreground"
+            className="space-y-1.5 border-2 border-foreground p-4"
           >
-            <p className="font-heading text-sm font-bold text-highlight">
-              Step {i + 1}
-            </p>
-            <p className="font-semibold">{step.title}</p>
+            <p className={cn(scoreLabel, "text-highlight")}>Step {i + 1}</p>
+            <p className="font-semibold uppercase">{step.title}</p>
             <p className="text-sm text-muted-foreground">{step.body}</p>
           </li>
         ))}

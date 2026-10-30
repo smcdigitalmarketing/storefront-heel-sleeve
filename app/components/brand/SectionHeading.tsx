@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 
 import { cn } from "~/lib/utils";
 
-/** A section's eyebrow, heading and subheading in Flashpop's type style. */
+import { scoreLabel } from "./score-label";
+
+/** A section's eyebrow, heading and subheading in Rally's type style. */
 export function SectionHeading({
   id,
   eyebrow,
@@ -31,17 +33,14 @@ export function SectionHeading({
     >
       {eyebrow ? (
         <p
-          className={cn(
-            "font-heading text-sm font-bold",
-            onDark ? "opacity-80" : "text-highlight",
-          )}
+          className={cn(scoreLabel, onDark ? "text-primary" : "text-highlight")}
         >
-          {eyebrow}
+          ● {eyebrow}
         </p>
       ) : null}
       <h2
         id={id}
-        className="font-heading text-4xl leading-[0.95] font-extrabold tracking-tight text-balance sm:text-5xl lg:text-6xl"
+        className="font-heading text-3xl leading-none font-extrabold tracking-[-0.035em] text-balance uppercase sm:text-5xl"
       >
         {children}
       </h2>

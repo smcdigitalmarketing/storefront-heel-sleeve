@@ -1,4 +1,5 @@
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { brand } from "~/content/brand";
 import type { ContentStatus, Fact } from "~/content/types";
 import { cn } from "~/lib/utils";
@@ -23,8 +24,8 @@ export function ProductDescription({
           {p}
         </p>
       ))}
-      <div className="rounded-3xl border-2 bg-secondary p-5 text-secondary-foreground">
-        <p className="mb-3 font-heading text-sm font-extrabold">At a glance</p>
+      <div className="border-2 border-foreground p-5">
+        <p className={cn(scoreLabel, "mb-3")}>At a glance</p>
         <dl className="grid grid-cols-[7.5rem_1fr] gap-x-4 gap-y-2 text-sm">
           {facts.map((f) => (
             <div key={f.label} className="contents">

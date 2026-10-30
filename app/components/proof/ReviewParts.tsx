@@ -2,13 +2,14 @@ import { CornerDownRightIcon, ThumbsUpIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PlaceholderTag } from "~/components/brand/PlaceholderTag";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import { brand } from "~/content/brand";
 import { formatReviewDate } from "~/content/reviews";
 import type { Review } from "~/content/types";
 import { cn } from "~/lib/utils";
 
-/** "Duo · Bubblegum", in Flashpop's own names. */
+/** "×2 · Night · Size M", in Rally's own names. */
 export function variantLabel(review: Review) {
   const { variant } = review;
   if (!variant) return null;
@@ -16,6 +17,7 @@ export function variantLabel(review: Review) {
     [
       variant.bundle && brand.bundleNames[variant.bundle]?.title,
       variant.colour && brand.store.colourNames[variant.colour],
+      variant.size && `Size ${variant.size}`,
     ]
       .filter(Boolean)
       .join(" · ") || null
@@ -33,7 +35,7 @@ export function ReviewByline({
   const bought = variantLabel(review);
   return (
     <p className={cn("text-sm", className)}>
-      <span className="font-semibold">{review.name}</span>
+      <span className={scoreLabel}>{review.name}</span>
       <span className="opacity-70">
         {" · "}
         <time dateTime={review.date}>{formatReviewDate(review.date)}</time>
@@ -55,7 +57,7 @@ export function ReviewTitle({
   return (
     <h3
       className={cn(
-        "font-heading text-xl leading-tight font-extrabold text-balance",
+        "font-heading text-xl leading-tight font-extrabold text-balance uppercase italic",
         className,
       )}
     >
@@ -96,7 +98,7 @@ export function ReviewFooter({
           variant="ghost"
           aria-pressed={voted}
           onClick={() => setVoted((v) => !v)}
-          className="ms-auto h-11 gap-1 rounded-full px-3 text-xs tabular-nums hover:bg-current/10 hover:text-current"
+          className="ms-auto h-11 gap-1 rounded-none px-3 text-xs tabular-nums hover:bg-current/10 hover:text-current focus-visible:ring-current/50"
         >
           <ThumbsUpIcon
             aria-hidden
