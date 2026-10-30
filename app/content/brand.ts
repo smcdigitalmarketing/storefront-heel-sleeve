@@ -65,7 +65,7 @@ export const brand: BrandConcept = {
       badge: "Save",
     },
     "black-friday": {
-      banner: "Black Friday / Pairs from the lowest price of the year",
+      banner: "Black Friday / Free parent guide and wash bag with every pair",
       eyebrow: "Rally / Black Friday",
       headline: "Black Friday kit drop",
       cta: "Get the BF price",
