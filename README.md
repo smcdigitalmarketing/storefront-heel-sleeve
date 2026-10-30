@@ -47,7 +47,7 @@ npm run dev                     # http://localhost:5173
 
 ## Before the store exists: the mock.shop stand-in
 
-No Shopify store is linked yet, so development runs on mock.shop:
+No Shopify store is linked yet, so development runs on mock.shop. [LAUNCH.md](LAUNCH.md) is the checklist for moving to a real store and opening it: the Shopify setup, the product's handle and options, bundle pricing, the code still to wire, and the content to confirm.
 
 - **The catalog** is MVSE (`mvse.mock.shop`), the default store in `app/lib/shop.ts`. `PUBLIC_STORE_DOMAIN` overrides it.
 - **The SOP product page** is `/products/rally-heel-sleeve` (`app/routes/hero-product.tsx`).
@@ -96,6 +96,8 @@ Anything not confirmed carries a `PlaceholderTag` (a dashed badge) on the page.
 
 ## Open decisions
 
+Each of these is a step in [LAUNCH.md](LAUNCH.md).
+
 - **Bundle pricing:** Shopify automatic discounts or Shopify Bundles. This needs the store.
 - **Gifts:** how the parent guide and wash bag are fulfilled.
 - **Reviews:** a reviews provider to replace the placeholder rating, reviews and Q&A.
@@ -107,7 +109,8 @@ Anything not confirmed carries a `PlaceholderTag` (a dashed badge) on the page.
 ## Deploy
 
 Pushing to `main` deploys through the GitHub Actions workflow that the Hydrogen
-channel adds (`.github/workflows/oxygen-deployment-*.yml`):
+channel adds (`.github/workflows/oxygen-deployment-*.yml`) once the storefront is
+created ([LAUNCH.md](LAUNCH.md), step 1):
 
 - `main` goes to the production environment.
 - Other branches get preview deployments.
