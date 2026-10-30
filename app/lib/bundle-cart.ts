@@ -5,8 +5,8 @@ export const BUNDLE_ATTRIBUTE = "_bundle";
 export const OFFER_ATTRIBUTE = "_offer";
 
 /**
- * One cart line per variant in the bundle, with quantities merged ("3 cameras:
- * pink, pink, cream" is 2 lines). Every line carries the same bundle tag, so the
+ * One cart line per variant in the bundle, with quantities merged ("4 sleeves:
+ * Night M, Night M, Royal M, Night L" is 3 lines). Every line carries the same bundle tag, so the
  * order shows which copies were bought together.
  */
 export function bundleLines(

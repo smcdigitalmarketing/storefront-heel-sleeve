@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Checks the server-rendered pages of a running storefront against the SOP
 // and the content rules in AGENTS.md: section order, gallery slides, bundles,
-// proof blocks, placeholder labels, the advertorial's labelling, and an
-// honesty lint over visible text.
+// the fit step, proof blocks, placeholder labels, the advertorial's labelling,
+// an honesty lint and the sleeve's claims lint over visible text.
 //
 //   npm run dev                 # or any running server
 //   npm run check:content       # BASE=http://localhost:3102 by default
+
+import { HEEL_NOTE, product } from "../app/content/product.ts";
 
 const BASE = (process.env.BASE ?? "http://localhost:3102").replace(/\/$/, "");
 const HERO = "/products/rally-heel-sleeve";
@@ -59,6 +61,36 @@ const BANNED = [
   /\bendorsed by\b/i,
 ];
 const NEGATION = /\b(?:no|not|never|without|won't|don't|isn't)\b/i;
+
+// Claims lint (from the Rally mock's check): health claims and the
+// competitor's names must not appear in visible text. The only allowed mentions
+// are HEEL_NOTE (get heel pain checked; the sleeve isn't a treatment) and the
+// FAQ that says the same. Sentences that negate a claim are removed first.
+const CLAIMS = [
+  [/\bcur(e|es|ed|ing)\b/i, "cure"],
+  [/\bheal(s|ed|ing)?\b/i, "heal"],
+  [/\btreat(s|ed|ing|ment|ments)?\b/i, "treat / treatment"],
+  [/\bunrelie|\brelie(f|ve|ves|ved|ving)\b/i, "relief / relieve"],
+  [/\bprevent(s|ed|ing|ion)?\b/i, "prevent"],
+  [/medical[- ]grade/i, "medical-grade"],
+  [/\bclinical(ly)?\b(?! review)/i, "clinically"],
+  [
+    /doctor[- ]recommended|recommended by (doctors|podiatrists)|podiatrist[- ]recommended/i,
+    "doctor recommended",
+  ],
+  [/\bFDA\b/, "FDA"],
+  [/growth[- ]plate/i, "growth plate"],
+  [/\bsever'?s\b/i, "Sever's"],
+  [/\bpain[- ]free\b|\bno more pain\b/i, "pain-free"],
+  [
+    /\b\d+\s?% of (parents|kids|children|families|athletes)\b/i,
+    "percentage claim",
+  ],
+  [/\bRecoverX\b|\bAsoleo\b(?!\.com)|Heel-Lock|Zero-Bulk/, "competitor name"],
+];
+const CLAIMS_ALLOWED = [HEEL_NOTE, product.faq[0].q, product.faq[0].a];
+const CLAIM_NEGATED =
+  /[^.!?]*\b(no|isn't|is not|not|doesn't|don't|never)\b[^.!?]*\b(treatment|treat|cure|heal|fix|relief)\b[^.!?]*[.!?]/gi;
 // Wording that only made sense in the retro-camera mock store.
 const MOCK_LEFTOVERS = [
   /\bdemo store\b/i,
@@ -100,7 +132,23 @@ function visibleText(html) {
 
 const count = (html, pattern) => (html.match(pattern) ?? []).length;
 
+function lintClaims(path, text) {
+  let clean = text;
+  for (const allowed of CLAIMS_ALLOWED) clean = clean.split(allowed).join(" ");
+  clean = clean.replace(CLAIM_NEGATED, " ");
+  for (const [pattern, label] of CLAIMS) {
+    const match = clean.match(pattern);
+    if (!match) continue;
+    const at = match.index ?? 0;
+    fail(
+      path,
+      `claims lint (${label}): "…${clean.slice(Math.max(0, at - 50), at + 50)}…"`,
+    );
+  }
+}
+
 function lintText(path, html) {
+  lintClaims(path, visibleText(html));
   const sentences = visibleText(html).split(/(?<=[.!?])\s+/);
   for (const sentence of sentences) {
     for (const pattern of BANNED) {
@@ -156,6 +204,19 @@ function checkProductPage(path, html) {
       fail(path, `missing block "${block}"`);
   }
   if (!html.includes('data-proof="rating"')) fail(path, "missing the rating");
+  if (!visibleText(html).includes(HEEL_NOTE))
+    fail(path, "missing the heel note (HEEL_NOTE)");
+
+  // The fit step: a size group per sleeve, with no size preselected. Each
+  // size chip carries the shoe size and ankle range in its title.
+  if (!html.includes("data-size-step")) fail(path, "missing the fit step");
+  const pressed = [
+    ...html.matchAll(/<button[^>]*title="US [^"]*"[^>]*>/g),
+  ].filter((m) =>
+    /data-state="on"|aria-checked="true"|aria-pressed="true"/.test(m[0]),
+  );
+  if (pressed.length > 0)
+    fail(path, `${pressed.length} size chip(s) preselected, expected none`);
   const illustrative = count(html, /data-placeholder="illustrative"/g);
   if (illustrative < 2)
     fail(path, `${illustrative} illustrative labels, expected at least 2`);

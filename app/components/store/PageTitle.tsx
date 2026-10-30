@@ -1,7 +1,7 @@
 import { scoreLabel } from "~/components/brand/score-label";
 import { cn } from "~/lib/utils";
 
-/** A store page's sticker eyebrow, display title and intro. */
+/** A store page's scoreboard eyebrow, display title and intro. */
 export function PageTitle({
   eyebrow,
   title,

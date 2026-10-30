@@ -12,7 +12,7 @@ export default [
   route("cart", "routes/cart.tsx"),
   route("search", "routes/search.tsx"),
   route("account", "routes/account.tsx"),
-  // Flashpop's store pages, ported from the mock store.
+  // Rally's store pages, ported from the mock store.
   route("about", "routes/about.tsx"),
   route("how-it-works", "routes/how-it-works.tsx"),
   route("faq", "routes/faq.tsx"),

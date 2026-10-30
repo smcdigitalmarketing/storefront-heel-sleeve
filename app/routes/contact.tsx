@@ -39,7 +39,7 @@ export function meta({ matches }: Route.MetaArgs) {
 }
 
 const TOPICS = [
-  "My camera",
+  "Sizing and fit",
   "An order",
   "Returns",
   "Press or partnerships",
