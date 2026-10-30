@@ -2,6 +2,7 @@ import { MenuIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -17,7 +18,43 @@ import {
   useDrawer,
 } from "~/lib/cart-drawer";
 
-const NAV_LINKS = [{ to: "/collections", label: "Collections" }];
+import { HELP_ITEMS, NAV_ITEMS, type NavItem } from "./store/nav";
+import { Wordmark } from "./store/Wordmark";
+
+function NavList({
+  items,
+  label,
+  size,
+}: {
+  items: NavItem[];
+  label: string;
+  size: "lg" | "md";
+}) {
+  return (
+    <nav aria-label={label} className="px-2 py-2">
+      <ul role="list" className="flex flex-col">
+        {items.map((link) => (
+          <li key={link.to}>
+            <Button
+              asChild
+              variant="ghost"
+              size="lg"
+              className={
+                size === "lg"
+                  ? "font-heading h-12 w-full justify-start text-xl font-bold"
+                  : "h-11 w-full justify-start text-base font-normal"
+              }
+            >
+              <Link to={link.to} onClick={() => closeMobileNavDrawer()}>
+                {link.label}
+              </Link>
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
 
 export function MobileNav() {
   const [open, setOpen] = useDrawer(MOBILE_NAV_DRAWER_ID);
@@ -31,33 +68,18 @@ export function MobileNav() {
         data-testid="mobile-nav"
         onCloseAutoFocus={returnFocusOnClose}
       >
-        <SheetHeader>
-          <SheetTitle>Menu</SheetTitle>
+        <SheetHeader className="border-b">
+          <SheetTitle className="sr-only">Menu</SheetTitle>
+          <Wordmark />
           <SheetDescription className="sr-only">
             Browse the store
           </SheetDescription>
         </SheetHeader>
-        <nav
-          aria-label="Mobile navigation"
-          className="flex-1 overflow-y-auto px-2 pb-4"
-        >
-          <ul role="list" className="flex flex-col">
-            {NAV_LINKS.map((link) => (
-              <li key={link.to}>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="lg"
-                  className="h-11 w-full justify-start text-lg"
-                >
-                  <Link to={link.to} onClick={() => closeMobileNavDrawer()}>
-                    {link.label}
-                  </Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="flex-1 overflow-y-auto pb-4">
+          <NavList items={NAV_ITEMS} label="Mobile navigation" size="lg" />
+          <Separator />
+          <NavList items={HELP_ITEMS} label="Help" size="md" />
+        </div>
       </SheetContent>
     </Sheet>
   );

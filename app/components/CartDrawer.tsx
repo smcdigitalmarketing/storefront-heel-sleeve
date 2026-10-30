@@ -6,7 +6,14 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode, type SubmitEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type SubmitEvent,
+} from "react";
 import { Link } from "react-router";
 
 import { Alert, AlertAction, AlertDescription } from "~/components/ui/alert";
@@ -53,6 +60,7 @@ import { formatPrice } from "~/lib/money";
 import { cn } from "~/lib/utils";
 
 import { publishCartViewed } from "./AnalyticsTrackers";
+import { FreeShippingBar } from "./proof/FreeShippingBar";
 
 // Focus lands here when the last line is removed, since the removed line held focus.
 const CART_DRAWER_FOCUS_ID = "cart-drawer-heading";
@@ -379,6 +387,7 @@ function CartFooter() {
 export function CartDrawer() {
   const [open, setOpen] = useDrawer(CART_DRAWER_ID);
   const totalQuantity = useCart((state) => state.data.totalQuantity);
+  const hasLines = useCart((state) => state.data.lines.nodes.length > 0);
   const cart = useCart((state) => state.data);
   const statusMessage = useCartStatusMessage();
   const cartRef = useRef(cart);
@@ -427,6 +436,7 @@ export function CartDrawer() {
           <div className="px-4">
             <CartErrorBanner />
           </div>
+          {hasLines ? <FreeShippingBar className="px-4 pb-3" /> : null}
           <ScrollArea className="min-h-0 flex-1 px-4">
             <CartLines />
           </ScrollArea>

@@ -21,6 +21,12 @@ shadcn/ui is the source of styling truth for this storefront.
    colours, `--radius`, `--font-sans` and `--font-heading`.
    - `app/app.css` holds shadcn's structure and nothing else: imports, the dark
      variant, `@theme inline`, `:root`, `.dark` and `@layer base`.
+   - **A brand colour shadcn has no slot for** is added the way shadcn's theming
+     docs add colours: a variable and its `-foreground` in `:root` and
+     `.dark`, mapped in `@theme inline`. An example is Flashpop's
+     `--highlight` (Tomato).
+   - **Brand motion** is a `--animate-*` token with its `@keyframes`, inside
+     `@theme inline`. Components use the utility, such as `animate-marquee`.
    - Never add other CSS files, selectors, `<style>` tags or inline styles.
    - The one exception is an inline `backgroundColor` or CSS variable fed from
      Shopify data, such as a swatch colour.

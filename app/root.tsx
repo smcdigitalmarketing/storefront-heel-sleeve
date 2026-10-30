@@ -31,6 +31,7 @@ import {
 } from "~/lib/customer-account";
 import { envContext } from "~/lib/env";
 import { predictiveSearchHandlers } from "~/lib/predictive-search-handlers";
+import { resolveOfferId } from "~/lib/offer";
 import { loadRootLayout } from "~/lib/root-layout";
 import { routeTemplates } from "~/lib/route-templates";
 import { createEphemeralSessionManager } from "~/lib/session";
@@ -127,6 +128,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     shopInfo: layout.shopInfo,
     shopIdentity: resolveShopIdentity(env, layout.shopId),
     currency: layout.currency,
+    offerId: resolveOfferId(env, request),
   };
 }
 

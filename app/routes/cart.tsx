@@ -8,6 +8,7 @@ import {
   CartLineItem,
   CartTotals,
 } from "~/components/CartDrawer";
+import { FreeShippingBar } from "~/components/proof/FreeShippingBar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { useCart } from "~/lib/cart";
@@ -78,7 +79,8 @@ export default function CartRoute() {
             </ul>
             <aside className="h-fit" aria-label="Cart summary">
               <Card size="sm">
-                <CardContent>
+                <CardContent className="flex flex-col gap-4">
+                  <FreeShippingBar />
                   <CartTotals isPending={totalsPending} />
                 </CardContent>
               </Card>

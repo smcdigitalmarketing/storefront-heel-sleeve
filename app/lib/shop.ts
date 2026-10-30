@@ -43,14 +43,19 @@ export function shouldUseMockShop(
 // snowboards.mock.shop, ...) and is listed at https://mock.shop/llms.txt.
 export const MOCK_SHOP_DOMAIN = "mock.shop";
 
+// The mock.shop store this storefront uses in mock mode when PUBLIC_STORE_DOMAIN
+// names none: MVSE, whose Color × Size tee stands in for the Rally sleeve (see
+// app/content/hero-product.ts).
+export const DEFAULT_MOCK_STORE = "mvse.mock.shop";
+
 export function isMockShopDomain(domain: string | undefined): domain is string {
   return domain === MOCK_SHOP_DOMAIN || Boolean(domain?.endsWith(`.${MOCK_SHOP_DOMAIN}`));
 }
 
 // Store domain for mock mode: a mock.shop host in PUBLIC_STORE_DOMAIN selects that
-// store's catalog; anything else means the default store.
+// store's catalog; anything else means this storefront's default store.
 export function getMockShopDomain(env: Pick<Env, "PUBLIC_STORE_DOMAIN">): string {
-  return isMockShopDomain(env.PUBLIC_STORE_DOMAIN) ? env.PUBLIC_STORE_DOMAIN : MOCK_SHOP_DOMAIN;
+  return isMockShopDomain(env.PUBLIC_STORE_DOMAIN) ? env.PUBLIC_STORE_DOMAIN : DEFAULT_MOCK_STORE;
 }
 
 // Store domain for real-store mode: prefer the worker env (Oxygen injects

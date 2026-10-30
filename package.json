@@ -10,7 +10,8 @@
     "dev:https": "hydrogen skills check --mode=warn && vite dev",
     "preview": "react-router build && vite preview",
     "typecheck": "react-router typegen && tsc && hydrogen gql check --fail-on-warn",
-    "check:styles": "node scripts/check-styles.mjs"
+    "check:styles": "node scripts/check-styles.mjs",
+    "check:content": "node scripts/check-content.mjs"
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",
