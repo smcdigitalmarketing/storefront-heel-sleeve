@@ -2,6 +2,7 @@ import { PlayIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Img } from "~/components/brand/Img";
+import { scoreLabel } from "~/components/brand/score-label";
 import { Button } from "~/components/ui/button";
 import {
   Carousel,
@@ -51,7 +52,7 @@ export function Gallery({ className }: { className?: string }) {
           {/* Focusable, so the left and right arrow keys change slides. */}
           <div
             tabIndex={0}
-            className="isolate overflow-hidden rounded-3xl focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ring"
+            className="border-foreground isolate overflow-hidden border-2 focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ring"
           >
             <CarouselContent className="ml-0" aria-live="polite">
               {slides.map((slide, i) => (
@@ -75,16 +76,21 @@ export function Gallery({ className }: { className?: string }) {
             <CarouselPrevious
               aria-label="Previous image"
               size="icon-lg"
-              className="static size-11 shadow-md"
+              className="border-foreground static size-11 rounded-none border-2"
             />
             <CarouselNext
               aria-label="Next image"
               size="icon-lg"
-              className="static size-11 shadow-md"
+              className="border-foreground static size-11 rounded-none border-2"
             />
           </div>
           <div className="absolute bottom-3 left-3 flex items-center gap-2">
-            <span className="rounded-full bg-foreground/60 px-2.5 py-1 text-xs text-background tabular-nums">
+            <span
+              className={cn(
+                scoreLabel,
+                "bg-secondary text-secondary-foreground px-2.5 py-1 text-xs",
+              )}
+            >
               {index + 1} / {slides.length}
             </span>
           </div>
@@ -103,9 +109,9 @@ export function Gallery({ className }: { className?: string }) {
                 aria-label={`Show image ${i + 1}: ${slide.label}`}
                 aria-current={i === index}
                 className={cn(
-                  "relative size-14 overflow-hidden rounded-xl border-2 p-0 sm:size-16",
+                  "relative size-14 overflow-hidden rounded-none border-2 p-0 sm:size-16",
                   i === index
-                    ? "border-border"
+                    ? "border-foreground"
                     : "border-transparent opacity-70 hover:opacity-100",
                 )}
               >
