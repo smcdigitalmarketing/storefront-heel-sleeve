@@ -53,21 +53,17 @@ export async function waitForUpdateCart(timeoutMs = 3000): Promise<boolean> {
  * Adds several lines through Shopify's Standard Actions, following the
  * hydrogen-cart-ui rules: adds batch in one call, but with no cart yet the
  * first add goes alone and settles first, or a second cart would be created.
- * Returns true when the lines went in two calls: the store can then keep only
- * the first call's lines until it refreshes, so the caller should refresh it.
  */
 export async function addLinesToCart(
   lines: CartLineInput[],
   { hasCart }: { hasCart: boolean },
-): Promise<boolean> {
+) {
   const updateCart = window.Shopify!.actions!.updateCart;
-  if (lines.length === 0) return false;
+  if (lines.length === 0) return;
   if (!hasCart) {
     await updateCart({ lines: [lines[0]!] });
-    if (lines.length === 1) return false;
-    await updateCart({ lines: lines.slice(1) });
-    return true;
+    if (lines.length > 1) await updateCart({ lines: lines.slice(1) });
+    return;
   }
   await updateCart({ lines });
-  return false;
 }

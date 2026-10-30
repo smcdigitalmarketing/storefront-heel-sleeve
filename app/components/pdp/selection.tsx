@@ -156,13 +156,14 @@ function useSelectionState(hero: HeroProduct) {
         });
         setAdding(true);
         try {
-          const split = await addLinesToCart(
+          await addLinesToCart(
             bundleLines(variantIds, { bundleId: bundle.id, offerId }),
             { hasCart: Boolean(cartId) },
           );
-          // The first bundle in a new cart goes in two calls; refresh so the
-          // drawer lists every line, not just the first call's.
-          if (split) await refresh();
+          // The cart store doesn't always fold new lines from these responses
+          // (count and total update, the line list doesn't), so refresh before
+          // opening the drawer.
+          await refresh();
           openCartDrawer();
         } finally {
           setAdding(false);
